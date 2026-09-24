@@ -1,0 +1,260 @@
+.l3 {
+  position: relative;
+}
+
+.l3__layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 820px) minmax(220px, 300px);
+  justify-content: center;
+  gap: clamp(20px, 3vw, 44px);
+  padding-top: clamp(4px, 1.5vh, 16px);
+  min-height: 0;
+}
+
+.l3__main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.l3__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px 20px;
+}
+
+.l3__setup {
+  margin: 0;
+  font-weight: 800;
+  font-stretch: 110%;
+  font-size: clamp(17px, 1.6vw, 22px);
+}
+
+.l3__hint {
+  margin: 0;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.l3__canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: clamp(360px, calc(100svh - 190px), 680px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--line);
+  touch-action: none;
+  cursor: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.l3__canvas-wrap canvas {
+  display: block;
+}
+
+/* Panel -------------------------------------------------------- */
+.l3__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 40px;
+}
+
+.money {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+  transition: background var(--t-med);
+}
+
+.money__value {
+  font-weight: 900;
+  font-stretch: 115%;
+  font-size: clamp(40px, 4.4vw, 64px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.money--won {
+  background: var(--red);
+  color: #fff;
+  animation: money-pop var(--t-slow) var(--ease-pop);
+}
+
+.money--won .eyebrow {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes money-pop {
+  40% {
+    transform: scale(1.08);
+  }
+}
+
+.ticker {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ticker__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-stretch: 110%;
+  text-transform: uppercase;
+  font-size: 15px;
+  color: var(--fg-faint);
+  transition: color var(--t-med);
+}
+
+.ticker__mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 2px var(--line-strong);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ticker__item.is-done {
+  color: var(--fg);
+}
+
+.ticker__item.is-done .ticker__mark {
+  background: var(--red);
+  box-shadow: none;
+  color: #fff;
+  animation: chip-pop var(--t-slow) var(--ease-pop);
+}
+
+.l3__keys {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-faint);
+}
+
+/* End ---------------------------------------------------------- */
+.l3__payoff {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  color: var(--red);
+  animation: payoff-in var(--t-slow) var(--ease-pop) both;
+}
+
+.l3__payoff-label {
+  font-weight: 900;
+  font-stretch: 115%;
+  text-transform: uppercase;
+  font-size: clamp(22px, 3vw, 40px);
+}
+
+.l3__payoff-value {
+  font-weight: 900;
+  font-stretch: 115%;
+  font-size: clamp(72px, 14vw, 180px);
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+}
+
+@keyframes payoff-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.l3__ladder {
+  margin: 0;
+  font-weight: 800;
+  font-stretch: 110%;
+  text-transform: uppercase;
+  font-size: clamp(17px, 2vw, 26px);
+  color: var(--fg-dim);
+}
+
+/* Smaller screens --------------------------------------------- */
+@media (max-width: 900px) {
+  .l3__layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'panel'
+      'main';
+    gap: 12px;
+  }
+  .l3__main {
+    grid-area: main;
+  }
+  .l3__panel {
+    grid-area: panel;
+    padding-top: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 8px 16px;
+  }
+  .money {
+    padding: 10px 14px;
+    grid-row: span 2;
+  }
+  .money__value {
+    font-size: 34px;
+  }
+  .ticker {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+  .ticker__item {
+    font-size: 11px;
+    gap: 5px;
+  }
+  .ticker__mark {
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+  }
+  .l3__keys {
+    display: none;
+  }
+  .l3__panel .toast-slot {
+    grid-column: 2;
+    min-height: 0;
+  }
+  .l3__panel .toast {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+  .l3__canvas-wrap {
+    height: clamp(340px, calc(100svh - 290px), 640px);
+  }
+  .l3__setup {
+    font-size: 15px;
+  }
+}
