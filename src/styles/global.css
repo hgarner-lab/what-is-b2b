@@ -1,34 +1,34 @@
 /* ---------------------------------------------------------------
-   Design tokens
-   Swap --red for the official McCann red when brand assets arrive.
+   Colours: a bright, daytime arcade.
+   McCann red is kept for coins, wins and the money moment.
 ---------------------------------------------------------------- */
 :root {
-  --bg: #0d0d0d;
-  --bg-raised: #171717;
-  --bg-sunk: #080808;
-  --line: #2a2a2a;
-  --line-strong: #3d3d3d;
-  --fg: #f4f2ee;
-  --fg-dim: #a3a09a;
-  --fg-faint: #6b6964;
+  --ink: #262047;
+  --ink-soft: #5b5680;
+  --ink-faint: #8a84a3;
+  --cream: #fff3dc;
+  --paper: #ffffff;
+  --sky: #58c4ff;
+  --sky-dark: #2a8fd6;
+  --sky-pale: #ddf3ff;
+  --sun: #ffcb3d;
+  --sun-dark: #e89b12;
+  --mint: #48d597;
+  --mint-dark: #1fa36a;
+  --coral: #ff7b9c;
+  --lilac: #9c82ff;
   --red: #e4002b;
-  --red-bright: #ff1f47;
-  --red-deep: #8c0019;
-  --ok: #f4f2ee;
 
-  --font: 'Archivo', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --font-arcade: 'Press Start 2P', 'Courier New', monospace;
+  --font-pixel: 'Pixelify Sans', 'Trebuchet MS', sans-serif;
+  --font-body: 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
 
-  --radius: 10px;
-  --radius-lg: 18px;
-  --gutter: clamp(16px, 4vw, 40px);
+  --gutter: clamp(12px, 3vw, 32px);
+  --t-fast: 120ms;
+  --t-med: 260ms;
+  --t-slow: 480ms;
 
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-pop: cubic-bezier(0.3, 1.5, 0.5, 1);
-  --t-fast: 140ms;
-  --t-med: 280ms;
-  --t-slow: 520ms;
-
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -53,13 +53,15 @@ body,
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font);
-  font-size: 16px;
+  color: var(--ink);
+  background-color: var(--cream);
+  background-image: var(--px-wall);
+  background-size: 64px 64px;
+  image-rendering: pixelated;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 17px;
   line-height: 1.4;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
@@ -69,9 +71,13 @@ button {
   color: inherit;
 }
 
+img {
+  image-rendering: pixelated;
+}
+
 :focus-visible {
-  outline: 3px solid var(--red-bright);
-  outline-offset: 3px;
+  outline: 4px dashed var(--ink);
+  outline-offset: 4px;
 }
 
 .sr-only {
@@ -87,53 +93,101 @@ button {
 }
 
 /* ---------------------------------------------------------------
+   Pixel frames (the art is painted in src/pixel/art.ts)
+---------------------------------------------------------------- */
+.px {
+  image-rendering: pixelated;
+  display: block;
+}
+
+.px-panel,
+.px-panel-sky,
+.px-panel-sun,
+.px-panel-cream {
+  border-style: solid;
+  border-width: 8px;
+  border-image-slice: 2 fill;
+  border-image-width: 8px;
+  border-image-repeat: stretch;
+  border-image-source: var(--px-panel);
+}
+
+.px-panel-sky {
+  border-image-source: var(--px-panel-sky);
+}
+.px-panel-sun {
+  border-image-source: var(--px-panel-sun);
+}
+.px-panel-cream {
+  border-image-source: var(--px-panel-cream);
+}
+
+.px-bubble {
+  border-style: solid;
+  border-width: 6px;
+  border-image: var(--px-bubble) 2 fill / 6px stretch;
+}
+
+.px-marquee {
+  border-style: solid;
+  border-width: 16px;
+  border-image: var(--px-marquee) 4 fill / 16px round;
+}
+
+.px-cubicle {
+  border-style: solid;
+  border-width: 16px 4px 4px;
+  border-image: var(--px-cubicle) 4 1 1 fill / 16px 4px 4px stretch;
+}
+
+/* ---------------------------------------------------------------
    Type
 ---------------------------------------------------------------- */
-.display {
-  font-weight: 900;
-  font-stretch: 112%;
+.arcade {
+  font-family: var(--font-arcade);
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 0.92;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.display {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
   margin: 0;
 }
 
 .display--xl {
-  font-size: clamp(44px, 9vw, 128px);
+  font-size: clamp(44px, 8vw, 112px);
 }
-
 .display--lg {
-  font-size: clamp(34px, 6vw, 80px);
+  font-size: clamp(32px, 5.2vw, 68px);
 }
-
 .display--md {
-  font-size: clamp(26px, 3.6vw, 48px);
+  font-size: clamp(24px, 3.2vw, 40px);
 }
-
 .display--sm {
-  font-size: clamp(20px, 2.2vw, 28px);
+  font-size: clamp(18px, 2vw, 24px);
 }
 
 .eyebrow {
-  font-weight: 700;
-  font-stretch: 110%;
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-family: var(--font-arcade);
+  font-size: 11px;
+  line-height: 1.4;
   text-transform: uppercase;
-  color: var(--fg-dim);
+  color: var(--ink-soft);
   margin: 0;
 }
 
 .lede {
-  font-size: clamp(17px, 1.6vw, 22px);
-  line-height: 1.35;
-  color: var(--fg-dim);
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.4;
+  color: var(--ink-soft);
   margin: 0;
-  max-width: 34em;
-}
-
-.red {
-  color: var(--red);
+  max-width: 36em;
 }
 
 /* ---------------------------------------------------------------
@@ -157,8 +211,7 @@ button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 var(--gutter) var(--gutter);
-  animation: screen-in var(--t-slow) var(--ease-out) both;
+  animation: screen-in var(--t-slow) steps(6) both;
 }
 
 @keyframes screen-in {
@@ -178,13 +231,67 @@ button {
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  gap: clamp(16px, 2.4vw, 28px);
-  max-width: 1100px;
+  gap: clamp(12px, 2vw, 22px);
   width: 100%;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: clamp(24px, 5vh, 64px) 0;
+  padding: clamp(16px, 3vh, 40px) 0;
 }
 
-.fade-up {
-  animation: screen-in var(--t-slow) var(--ease-out) both;
+.blink {
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blink {
+    animation: none;
+  }
+}
+
+/* Screen shake for big moments */
+.shake {
+  animation: shake 360ms steps(6) both;
+}
+
+@keyframes shake {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-6px, 3px);
+  }
+  40% {
+    transform: translate(5px, -4px);
+  }
+  60% {
+    transform: translate(-4px, -2px);
+  }
+  80% {
+    transform: translate(3px, 3px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake {
+    animation: none;
+  }
+}
+
+/* A gentle pop for small things (the big "pop" is for GO! and LEVEL CLEAR) */
+@keyframes pop-small {
+  from {
+    transform: scale(1.25);
+  }
+  to {
+    transform: none;
+  }
 }

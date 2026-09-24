@@ -5,17 +5,16 @@
 .l3__layout {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 820px) minmax(220px, 300px);
+  grid-template-columns: minmax(0, 860px) minmax(220px, 290px);
   justify-content: center;
-  gap: clamp(20px, 3vw, 44px);
-  padding-top: clamp(4px, 1.5vh, 16px);
+  gap: clamp(14px, 2.4vw, 36px);
   min-height: 0;
 }
 
 .l3__main {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -29,30 +28,23 @@
 
 .l3__setup {
   margin: 0;
-  font-weight: 800;
-  font-stretch: 110%;
-  font-size: clamp(17px, 1.6vw, 22px);
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: clamp(18px, 1.7vw, 24px);
 }
 
 .l3__hint {
   margin: 0;
-  font-weight: 800;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--red-bright);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 10px;
+  color: var(--red);
 }
 
 .l3__canvas-wrap {
   position: relative;
   width: 100%;
-  height: clamp(360px, calc(100svh - 190px), 680px);
-  border-radius: var(--radius-lg);
+  height: clamp(340px, calc(100svh - 290px), 660px);
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px var(--line);
+  border: 6px solid var(--ink);
   touch-action: none;
   cursor: none;
   user-select: none;
@@ -61,54 +53,40 @@
 
 .l3__canvas-wrap canvas {
   display: block;
+  image-rendering: pixelated;
 }
 
 /* Panel -------------------------------------------------------- */
 .l3__panel {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding-top: 40px;
+  gap: 14px;
+  padding-top: 34px;
 }
 
 .money {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 18px 20px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-raised);
-  transition: background var(--t-med);
+  gap: 6px;
+  padding: 8px 12px;
 }
 
 .money__value {
-  font-weight: 900;
-  font-stretch: 115%;
-  font-size: clamp(40px, 4.4vw, 64px);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-arcade);
+  font-size: clamp(26px, 2.8vw, 40px);
+  line-height: 1.1;
 }
 
 .money--won {
-  background: var(--red);
-  color: #fff;
-  animation: money-pop var(--t-slow) var(--ease-pop);
-}
-
-.money--won .eyebrow {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-@keyframes money-pop {
-  40% {
-    transform: scale(1.08);
-  }
+  border-image-source: var(--px-panel-sun);
+  color: var(--red);
+  animation: pop-small 400ms steps(4);
 }
 
 .ticker {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -118,40 +96,39 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
-  font-stretch: 110%;
+  font-family: var(--font-pixel);
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: 15px;
-  color: var(--fg-faint);
-  transition: color var(--t-med);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink-faint);
 }
 
 .ticker__mark {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
-  box-shadow: inset 0 0 0 2px var(--line-strong);
-  font-size: 14px;
+  border: 3px dashed var(--ink-faint);
+  font-size: 13px;
   flex-shrink: 0;
 }
 
 .ticker__item.is-done {
-  color: var(--fg);
+  color: var(--ink);
 }
 
 .ticker__item.is-done .ticker__mark {
-  background: var(--red);
-  box-shadow: none;
-  color: #fff;
-  animation: chip-pop var(--t-slow) var(--ease-pop);
+  background: var(--mint);
+  border: 3px solid var(--ink);
+  color: var(--ink);
+  animation: pop-small 400ms steps(4);
 }
 
 .l3__keys {
   margin: 0;
   font-size: 13px;
-  color: var(--fg-faint);
+  color: var(--ink-soft);
 }
 
 /* End ---------------------------------------------------------- */
@@ -160,53 +137,38 @@
   display: flex;
   align-items: baseline;
   gap: 18px;
-  color: var(--red);
-  animation: payoff-in var(--t-slow) var(--ease-pop) both;
+  animation: pop 500ms steps(5) both;
 }
 
 .l3__payoff-label {
-  font-weight: 900;
-  font-stretch: 115%;
-  text-transform: uppercase;
-  font-size: clamp(22px, 3vw, 40px);
+  font-size: clamp(20px, 2.6vw, 34px);
+  color: var(--ink);
 }
 
 .l3__payoff-value {
-  font-weight: 900;
-  font-stretch: 115%;
-  font-size: clamp(72px, 14vw, 180px);
+  font-size: clamp(72px, 13vw, 170px);
   line-height: 0.85;
-  letter-spacing: -0.03em;
-}
-
-@keyframes payoff-in {
-  from {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  color: var(--red);
+  text-shadow: 6px 6px 0 var(--sun);
 }
 
 .l3__ladder {
   margin: 0;
-  font-weight: 800;
-  font-stretch: 110%;
+  font-family: var(--font-pixel);
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: clamp(17px, 2vw, 26px);
-  color: var(--fg-dim);
+  font-size: clamp(18px, 2vw, 26px);
+  color: var(--ink-soft);
 }
 
 /* Smaller screens --------------------------------------------- */
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .l3__layout {
     grid-template-columns: 1fr;
     grid-template-areas:
       'panel'
       'main';
-    gap: 12px;
+    gap: 8px;
   }
   .l3__main {
     grid-area: main;
@@ -216,43 +178,41 @@
     padding-top: 0;
     display: grid;
     grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 8px 16px;
+    align-items: stretch;
+    gap: 8px;
   }
   .money {
-    padding: 10px 14px;
-    grid-row: span 2;
+    padding: 2px 8px;
+    justify-content: center;
   }
   .money__value {
-    font-size: 34px;
+    font-size: 20px;
   }
   .ticker {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 6px 12px;
+    gap: 4px 10px;
+    padding: 2px 6px;
   }
   .ticker__item {
     font-size: 11px;
-    gap: 5px;
+    gap: 4px;
   }
   .ticker__mark {
-    width: 16px;
-    height: 16px;
-    font-size: 10px;
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+    border-width: 2px;
   }
-  .l3__keys {
+  .ticker__item.is-done .ticker__mark {
+    border-width: 2px;
+  }
+  .l3__keys,
+  .l3__panel .toast-slot {
     display: none;
   }
-  .l3__panel .toast-slot {
-    grid-column: 2;
-    min-height: 0;
-  }
-  .l3__panel .toast {
-    font-size: 13px;
-    padding: 4px 8px;
-  }
   .l3__canvas-wrap {
-    height: clamp(340px, calc(100svh - 290px), 640px);
+    height: clamp(320px, calc(100svh - 330px), 640px);
   }
   .l3__setup {
     font-size: 15px;

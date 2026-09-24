@@ -100,6 +100,34 @@ export const sound = {
   milestone() {
     [659, 880].forEach((f, i) => tone(f, { at: i * 0.08, dur: 0.16, type: 'triangle', vol: 0.35 }));
   },
+  coin() {
+    tone(988, { dur: 0.08, type: 'square', vol: 0.3 });
+    tone(1319, { at: 0.08, dur: 0.35, type: 'square', vol: 0.3 });
+  },
+  ready() {
+    tone(523, { dur: 0.1, type: 'square', vol: 0.25 });
+  },
+  go() {
+    tone(784, { dur: 0.08, type: 'square', vol: 0.3 });
+    tone(1046, { at: 0.08, dur: 0.22, type: 'square', vol: 0.3 });
+  },
+  combo(n: number) {
+    const base = 660 + Math.min(n, 6) * 90;
+    tone(base, { dur: 0.06, type: 'square', vol: 0.25 });
+    tone(base * 1.5, { at: 0.06, dur: 0.1, type: 'square', vol: 0.25 });
+  },
+  countdown() {
+    tone(440, { dur: 0.08, type: 'square', vol: 0.22 });
+  },
+  levelClear() {
+    const notes = [523, 523, 523, 659, 784, 659, 784, 1046];
+    const at = [0, 0.1, 0.2, 0.3, 0.45, 0.6, 0.7, 0.85];
+    notes.forEach((f, i) => tone(f, { at: at[i], dur: i === notes.length - 1 ? 0.5 : 0.1, type: 'square', vol: 0.24 }));
+    tone(131, { at: 0.85, dur: 0.5, type: 'triangle', vol: 0.4 });
+  },
+  zoom() {
+    tone(200, { dur: 0.5, type: 'triangle', vol: 0.3, slideTo: 1600 });
+  },
   win() {
     const notes = [523, 659, 784, 1046, 784, 1046, 1318];
     notes.forEach((f, i) => tone(f, { at: i * 0.09, dur: 0.22, type: 'square', vol: 0.24 }));

@@ -67,7 +67,7 @@ export function layout(world: World, w: number, h: number) {
   const cols = w < 520 ? 2 : 4;
   const gap = w < 520 ? 6 : 8;
   const layerGap = gap * 2.2;
-  const brickH = Math.max(34, Math.min(54, h * 0.075));
+  const brickH = Math.max(40, Math.min(60, h * 0.085));
   const brickW = (w - pad * 2 - gap * (cols - 1)) / cols;
 
   world.goal = { x: pad, y: pad, w: w - pad * 2, h: Math.max(40, Math.min(56, h * 0.08)) };
