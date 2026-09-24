@@ -12,7 +12,7 @@ import './highscores.css';
 
 const RANK_COLORS = [PALETTE.sun, PALETTE.sky, PALETTE.mint];
 
-export function HighScores({ onPlayAgain }: { onPlayAgain: () => void }) {
+export function HighScores({ onPlayAgain, onFreePlay }: { onPlayAgain: () => void; onFreePlay: () => void }) {
   const [showRecap, setShowRecap] = useState(false);
   const coarse = useCoarsePointer();
   // Link to the game itself (no ?extras), for the audience to scan.
@@ -89,9 +89,10 @@ export function HighScores({ onPlayAgain }: { onPlayAgain: () => void }) {
             </div>
 
             <div className="hs__actions" style={{ animationDelay: '2100ms' }}>
-              <Button onClick={onPlayAgain} autoFocus>
-                {copy.final.again}
+              <Button variant="coin" onClick={onFreePlay} autoFocus>
+                {copy.freePlay.button}
               </Button>
+              <Button onClick={onPlayAgain}>{copy.final.again}</Button>
               <Button variant="ghost" onClick={() => setShowRecap(true)}>
                 {copy.final.recap}
               </Button>

@@ -26,6 +26,9 @@ export type World = {
   ball: { x: number; y: number; vx: number; vy: number; r: number; stuck: boolean };
   speed: number;
   assist: number; // 0 = none, grows gently over time
+  /** Free play: ball speed and paddle width multipliers (1 = normal). */
+  speedScale: number;
+  paddleScale: number;
   floaters: Floater[];
   sparks: Spark[];
 };
@@ -49,6 +52,8 @@ export function createWorld(w: number, h: number, pix = 4): World {
     ball: { x: w / 2, y: 0, vx: 0, vy: 0, r: 8, stuck: true },
     speed: 0,
     assist: 0,
+    speedScale: 1,
+    paddleScale: 1,
     floaters: [],
     sparks: [],
   };
@@ -90,14 +95,13 @@ export function layout(world: World, w: number, h: number, pix = 4) {
     y += rows * brickH + (rows - 1) * gap + layerGap;
   }
 
-  const base = Math.min(w, 900);
-  world.paddle.w = Math.max(90, base * (0.19 + world.assist * 0.08));
+  world.paddle.w = paddleWidth(world);
   world.paddle.h = 4 * pix;
   world.paddle.y = h - 30;
   world.paddle.x = clamp(world.paddle.x * sx, world.paddle.w / 2, w - world.paddle.w / 2);
 
   world.ball.r = 3 * pix;
-  world.speed = Math.max(340, Math.min(620, Math.min(w, h * 1.3) * 0.78));
+  world.speed = Math.max(340, Math.min(620, Math.min(w, h * 1.3) * 0.78)) * world.speedScale;
   if (world.ball.stuck) {
     world.ball.x = world.paddle.x;
     world.ball.y = world.paddle.y - world.ball.r - 2;
@@ -108,9 +112,25 @@ export function layout(world: World, w: number, h: number, pix = 4) {
   }
 }
 
+function paddleWidth(world: World) {
+  const base = Math.min(world.w, 900);
+  return Math.max(60, base * (0.19 + world.assist * 0.08) * world.paddleScale);
+}
+
 export function setAssist(world: World, level: number) {
   world.assist = level;
-  world.paddle.w = Math.max(90, Math.min(world.w, 900) * (0.19 + level * 0.08));
+  world.paddle.w = paddleWidth(world);
+}
+
+/** Free play: make the next deal harder, and put every barrier back. */
+export function nextWave(world: World, wave: number, pix = 4) {
+  world.speedScale = Math.min(1.9, 1 + (wave - 1) * 0.12);
+  world.paddleScale = Math.max(0.5, 1 - (wave - 1) * 0.08);
+  world.bricks.forEach((b) => (b.alive = true));
+  world.ball.stuck = true;
+  world.ball.vx = 0;
+  world.ball.vy = 0;
+  layout(world, world.w, world.h, pix);
 }
 
 export function movePaddle(world: World, x: number) {

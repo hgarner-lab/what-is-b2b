@@ -7,6 +7,7 @@ import { CABINET, cabinet, check, coin } from '../pixel/art';
 import { DEMO_H, DEMO_TICK_MS, DEMO_W, drawDemo, type DemoKind } from '../pixel/demos';
 import { PALETTE } from '../pixel/sprite';
 import { Sprite } from '../pixel/Sprite';
+import { formatScore, getBest, isFreePlayUnlocked } from '../freeplay/progress';
 import './room.css';
 
 export const MACHINE_COLORS = [PALETTE.sky, PALETTE.sun, PALETTE.mint];
@@ -22,11 +23,20 @@ export function ArcadeRoom({
   next,
   completed,
   onEnter,
+  freePlay = false,
+  onFreePlay,
+  onStory,
 }: {
   next: number;
   completed: number[];
   onEnter: (index: number) => void;
+  /** Free play: every machine is open and plays its endless version. */
+  freePlay?: boolean;
+  onFreePlay?: () => void;
+  onStory?: () => void;
 }) {
+  const F = copy.freePlay;
+  const [unlocked] = useState(isFreePlayUnlocked);
   const reduced = useMotionReduced();
   const roomRef = useRef<HTMLDivElement>(null);
   const cabRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -41,17 +51,17 @@ export function ArcadeRoom({
     return () => music.stop();
   }, []);
 
-  const insertCoin = (from?: HTMLElement | null) => {
+  const insertCoin = (from?: HTMLElement | null, which = next) => {
     if (busy) return;
     setBusy(true);
     music.stop();
     sound.unlock();
-    const cab = cabRefs.current[next];
+    const cab = cabRefs.current[which];
     const room = roomRef.current;
     const flyer = coinRef.current;
     if (!cab || !room || !flyer || reduced) {
       sound.coin();
-      window.setTimeout(() => onEnter(next), 250);
+      window.setTimeout(() => onEnter(which), 250);
       return;
     }
 
@@ -97,7 +107,7 @@ export function ArcadeRoom({
           ],
           { duration: 500, easing: 'ease-in', fill: 'forwards' },
         );
-        zoom.onfinish = () => onEnter(next);
+        zoom.onfinish = () => onEnter(which);
       }, 250);
     };
   };
@@ -107,16 +117,20 @@ export function ArcadeRoom({
       <div className="room__lights" aria-hidden="true" />
       <div className="room__wall">
         <div className="room__sign px-marquee">
-          <h1 className="arcade room__title">{copy.intro.title}</h1>
+          <h1 className="arcade room__title">{freePlay ? F.roomTitle : copy.intro.title}</h1>
         </div>
-        <p className="room__sub">{firstVisit ? copy.intro.sub : copy.room.afterLevel[next]}</p>
+        <p className="room__sub">
+          {freePlay ? F.roomSub : firstVisit ? copy.intro.sub : copy.room.afterLevel[next]}
+        </p>
 
         <div className="room__row">
           {MACHINE_COLORS.map((color, i) => {
-            const done = completed.includes(i + 1);
-            const ready = i === next;
+            const done = !freePlay && completed.includes(i + 1);
+            const ready = freePlay || i === next;
             const m = copy.machines[i];
             const status = done ? 'cleared' : ready ? 'ready' : 'locked';
+            const best = freePlay ? getBest(i) : 0;
+            const title = freePlay ? F.games[i].title : m.short;
             return (
               <div key={i} className={`cabwrap cabwrap--${status}`}>
                 <div
@@ -126,16 +140,22 @@ export function ArcadeRoom({
                   className={`cab ${ready && flash ? 'cab--flash' : ''}`}
                   role={ready ? 'button' : undefined}
                   tabIndex={ready ? 0 : undefined}
-                  aria-label={`Machine ${i + 1}, ${m.short} ${
-                    ready ? 'Ready to play.' : done ? `Cleared: ${m.score}.` : 'Coming up.'
+                  aria-label={`Machine ${i + 1}, ${title} ${
+                    freePlay
+                      ? `Free play.${best ? ` Best ${formatScore(i, best)}.` : ''}`
+                      : ready
+                        ? 'Ready to play.'
+                        : done
+                          ? `Cleared: ${m.score}.`
+                          : 'Coming up.'
                   }`}
-                  onClick={ready ? (e) => insertCoin(e.currentTarget) : undefined}
+                  onClick={ready ? (e) => insertCoin(e.currentTarget, i) : undefined}
                   onKeyDown={
                     ready
                       ? (e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            insertCoin(e.currentTarget);
+                            insertCoin(e.currentTarget, i);
                           }
                         }
                       : undefined
@@ -147,7 +167,11 @@ export function ArcadeRoom({
                   </div>
                   <div className="cab__screen" style={pct(CABINET.screen)}>
                     <DemoScreen kind={i as DemoKind} dim={status === 'locked'} />
-                    {done ? (
+                    {freePlay ? (
+                      <span className="cab__status arcade">
+                        {best ? `${F.best} ${formatScore(i, best)}` : <span className="blink">{F.status}</span>}
+                      </span>
+                    ) : done ? (
                       <span className="cab__status arcade cab__status--done">
                         <Sprite src={check()} w={7} h={6} /> {m.score}
                       </span>
@@ -160,7 +184,7 @@ export function ArcadeRoom({
                     )}
                   </div>
                 </div>
-                <span className="cab__caption">{m.short}</span>
+                <span className="cab__caption">{title}</span>
               </div>
             );
           })}
@@ -168,18 +192,36 @@ export function ArcadeRoom({
       </div>
 
       <div className="room__floor">
-        {next < 3 && (
+        {freePlay ? (
           <div className="room__cta">
-            <Button
-              variant="coin"
-              autoFocus
-              icon={<Sprite src={coin()} w={8} h={8} />}
-              onClick={() => insertCoin(document.activeElement as HTMLElement)}
-            >
-              {copy.room.ready}
-            </Button>
-            {firstVisit && <p className="room__note">{copy.intro.note}</p>}
+            <p className="room__note arcade">Pick a machine</p>
+            {onStory && (
+              <Button variant="ghost" onClick={onStory}>
+                {F.story}
+              </Button>
+            )}
           </div>
+        ) : (
+          next < 3 && (
+            <div className="room__cta">
+              <div className="room__buttons">
+                <Button
+                  variant="coin"
+                  autoFocus
+                  icon={<Sprite src={coin()} w={8} h={8} />}
+                  onClick={() => insertCoin(document.activeElement as HTMLElement)}
+                >
+                  {copy.room.ready}
+                </Button>
+                {unlocked && firstVisit && onFreePlay && (
+                  <Button variant="ghost" onClick={onFreePlay}>
+                    {F.button}
+                  </Button>
+                )}
+              </div>
+              {firstVisit && <p className="room__note">{copy.intro.note}</p>}
+            </div>
+          )
         )}
       </div>
 

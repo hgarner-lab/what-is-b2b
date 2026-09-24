@@ -24,7 +24,7 @@ export const copy = {
 
   /** The three machines, in order. */
   machines: [
-    { short: 'Who’s the customer?', score: '7 people' },
+    { short: 'Who’s the customer?', score: '8 people' },
     { short: 'Market to them', score: '7 stages' },
     { short: 'Turn it into revenue', score: `${DEAL_VALUE} won` },
   ],
@@ -81,7 +81,7 @@ export const copy = {
         rank: '1st',
         big: 'Many people.',
         small: 'Purchases are usually group decisions.',
-        score: '7 people',
+        score: '8 people',
       },
       {
         rank: '2nd',
@@ -103,13 +103,47 @@ export const copy = {
     scan: 'Play on your phone',
   },
 
+  /** Endless versions of the three games, unlocked after the story. */
+  freePlay: {
+    button: 'Free play',
+    roomTitle: 'Free play',
+    roomSub: 'Endless mode. How long can you last?',
+    status: 'Free play',
+    best: 'Best',
+    story: 'Story mode',
+    gameOver: 'Game over',
+    newBest: 'New best!',
+    again: 'Play again',
+    exit: 'Back to the arcade',
+    games: [
+      {
+        title: 'Convince everyone',
+        rules: 'Click people before they give up on you. Lose three and the deal is off. It gets faster.',
+        lost: 'Too many people said no.',
+        scoreLabel: 'Convinced',
+      },
+      {
+        title: 'Full-funnel blocks',
+        rules: 'Classic rules. It speeds up every 10 lines. A line with 5 or more kinds of marketing scores double.',
+        lost: 'The funnel filled up.',
+        scoreLabel: 'Score',
+      },
+      {
+        title: 'Revenue rush',
+        rules: 'Break every barrier to win the deal. Each new deal is faster, with a smaller paddle. Three balls.',
+        lost: 'Out of chances.',
+        scoreLabel: 'Revenue won',
+      },
+    ],
+  },
+
   recap: {
     title: 'What you just did',
     items: [
       {
         level: 'Level 1',
-        stat: '7 people',
-        text: 'You set out to convince one buyer. Seven people turned up: leadership, finance, technology, procurement, legal and the people who’d actually use it. Each had different questions, and any of them could slow the deal down.',
+        stat: '8 people',
+        text: 'You set out to convince one buyer. Eight people turned up: leadership, finance, technology, security, procurement, legal and the people who’d actually use it. Each had different questions, and any of them could slow the deal down.',
       },
       {
         level: 'Level 2',

@@ -18,7 +18,7 @@ import './level1.css';
 
 type Phase = 'title' | 'setup' | 'first' | 'twist' | 'chaos' | 'freeze' | 'reveal';
 
-type Occupant = {
+export type Occupant = {
   personId: string;
   round: 1 | 2;
   status: 'up' | 'convinced' | 'leaving';
@@ -34,9 +34,10 @@ const TWIST_SCHEDULE: { id: string; at: number; headline?: string }[] = [
   { id: 'procurement', at: 5600 },
   { id: 'legal', at: 7200, headline: 'Convince… everyone?' },
   { id: 'user', at: 8500 },
-  { id: 'ceo', at: 9600 },
+  { id: 'security', at: 9500 },
+  { id: 'ceo', at: 10400 },
 ];
-const TWIST_END = 11600;
+const TWIST_END = 12400;
 const CHAOS_LENGTH = 8500;
 const CHAOS_EVERY = 620;
 const ROUND1_LINGER = 6500;
@@ -204,7 +205,6 @@ export function LevelOneBuyingGroup({
         g.slots[HOME_SLOT[s.id]] = { personId: s.id, round: 1, status: 'up', key: ++g.keySeq };
         if (!g.seen.includes(s.id)) g.seen.push(s.id);
       });
-      g.slots[5] = null;
       g.lastAppeared = -1;
       setFlash(null);
       setHeadline('Everyone’s here.');
@@ -319,7 +319,7 @@ export function LevelOneBuyingGroup({
   );
 }
 
-function Person({
+export function Person({
   person,
   round,
   status,
@@ -370,7 +370,7 @@ const DECOR: { view: WindowView; extra: 'plant' | 'clock' | 'chart' | 'star' | '
   { view: 'city', extra: 'chart', side: 'r' },
 ];
 
-function PodDecor({ slot }: { slot: number }) {
+export function PodDecor({ slot }: { slot: number }) {
   const d = DECOR[slot % DECOR.length];
   const winSide = d.side === 'l' ? 'r' : 'l';
   const extra =

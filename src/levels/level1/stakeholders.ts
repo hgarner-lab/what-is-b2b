@@ -15,6 +15,7 @@ export const STAKEHOLDERS: Stakeholder[] = [
   { id: 'procurement', role: 'Procurement', ask: 'Why should we choose you?', again: 'Have you filled in the 40-page form?' },
   { id: 'legal', role: 'Legal', ask: 'Where does the data go?', again: 'Who’s liable if it goes wrong?' },
   { id: 'user', role: 'End user', ask: 'Is this going to make my job easier?', again: 'Do I have to learn something new?' },
+  { id: 'security', role: 'Security', ask: 'Has it passed our security checks?', again: 'Who else can see our data?' },
   { id: 'ceo', role: 'CEO', ask: 'Why now?', again: 'What does the board think?' },
 ];
 
@@ -28,6 +29,7 @@ export const HOME_SLOT: Record<string, number> = {
   procurement: 4,
   legal: 2,
   user: 7,
+  security: 5,
   ceo: 0,
 };
 

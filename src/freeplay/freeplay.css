@@ -1,0 +1,36 @@
+/* Shared bits for the endless games */
+.fp {
+  position: relative;
+}
+
+.fp__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.fp__flash--bad {
+  border-image-source: var(--px-panel) !important;
+  color: var(--red);
+}
+
+.fp__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 26px;
+}
+
+.fp__side .hud {
+  flex-direction: column;
+}
+
+@media (max-width: 640px) {
+  .fp__side {
+    padding-top: 0;
+  }
+  .fp__side .hud {
+    flex-direction: row;
+  }
+}

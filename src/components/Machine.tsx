@@ -7,11 +7,14 @@ export function Machine({
   color,
   number,
   title,
+  label,
   children,
 }: {
   color: string;
   number: number;
   title: string;
+  /** Replaces "Level N" on the sign, e.g. "Free play". */
+  label?: string;
   children: ReactNode;
 }) {
   const style = { ['--cab' as string]: `url("${cabinetFrame(color)}")` } as CSSProperties;
@@ -19,7 +22,7 @@ export function Machine({
     <div className="machine" style={style}>
       <div className="machine__marquee px-marquee">
         <span className="arcade">
-          Level {number} · {title}
+          {label ?? `Level ${number}`} · {title}
         </span>
       </div>
       <div className="machine__bezel">

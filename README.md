@@ -13,8 +13,24 @@ game just taught you, and the whole thing ends on a high-score board.
 | 2. Now market to them | Classic falling blocks. Each of the seven shapes is a kind of marketing | Marketing works across the whole journey, not just getting noticed. |
 | 3. Now turn it into revenue | Bounce a ball to break barriers | Marketing can be traced through to pipeline and revenue. |
 
-Nobody can fail. If someone struggles, each level quietly helps them along
-and still finishes.
+Nobody can fail the story. If someone struggles, each level quietly helps
+them along and still finishes.
+
+## Free play
+
+Finishing the story unlocks **Free play**: endless versions of the three
+games that keep getting harder, with lives, a score, GAME OVER and a best
+score saved in the browser.
+
+| Game | How it gets harder | Scoring |
+| --- | --- | --- |
+| Convince everyone | People arrive faster, give up sooner and more appear at once. Lose three and the deal is off. | 1 per person, CEO worth 3 |
+| Full-funnel blocks | Classic falling blocks. Speeds up every 10 lines. | Classic line scores × level. A line with 5 or more kinds of marketing scores double |
+| Revenue rush | Every deal you win brings a faster ball and a smaller paddle. Three balls. | £100k per barrier and a bonus per deal, both growing with each deal |
+
+Free play is on the high-score screen, in the arcade room once it's been
+unlocked in this browser, and on the **P** key. The code lives in
+`src/freeplay/`.
 
 ## Running it
 
@@ -64,7 +80,7 @@ The white versions are kept in case they're needed. Paths are set in
   mint, with deep indigo for text. McCann red is kept for coins, wins and the
   money moment. The colours live in `src/pixel/sprite.ts` (`PALETTE`) and at
   the top of `src/styles/global.css`.
-- **Pixel art:** everything (the machines, the seven characters, the office
+- **Pixel art:** everything (the machines, the eight characters, the office
   decor, blocks, coins, speech bubbles, buttons and frames) is real pixel art
   drawn in `src/pixel/art.ts` and shown scaled up with crisp edges. Open the
   site with `?sprites` on the end of the address to see it all on one page.
@@ -86,6 +102,7 @@ see them on screen):
 | --- | --- |
 | 1, 2, 3 | Jump straight to a level |
 | H | Jump to the high scores |
+| P | Free play (endless mode) |
 | R | Start again |
 | F | Full screen |
 
