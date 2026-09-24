@@ -221,3 +221,50 @@
     font-size: 15px;
   }
 }
+
+/* Phones: the machine fills exactly the visible screen and the play area
+   takes whatever height is left, so the paddle is never off-screen. */
+@media (max-width: 640px) {
+  .l3__head {
+    display: none;
+  }
+  .machine:has(.l3:not(.l3--end)) {
+    height: calc(100svh - 60px);
+    flex: none;
+  }
+  .machine:has(.l3:not(.l3--end)) .machine__bezel,
+  .machine:has(.l3:not(.l3--end)) .machine__screen {
+    min-height: 0;
+  }
+  .l3:not(.l3--end) {
+    flex: 1;
+    min-height: 0;
+  }
+  .l3:not(.l3--end) .l3__layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  .l3:not(.l3--end) .l3__main {
+    flex: 1;
+    min-height: 0;
+  }
+  .l3__canvas-wrap {
+    flex: 1;
+    height: auto;
+    min-height: 220px;
+  }
+  .l3 .hud {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 2px 8px;
+  }
+  .l3 .hud .eyebrow {
+    font-size: 8px;
+  }
+  .l3 .hud__value {
+    font-size: 13px;
+  }
+}
