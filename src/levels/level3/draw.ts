@@ -78,7 +78,15 @@ export function draw(
   tctx: CanvasRenderingContext2D,
   world: World,
   now: number,
-  opts: { won: boolean; wonAt: number; showLaunchHint: boolean; continueFrom: number; reducedMotion: boolean },
+  opts: {
+    won: boolean;
+    wonAt: number;
+    showLaunchHint: boolean;
+    continueFrom: number;
+    reducedMotion: boolean;
+    /** Free play: what the deal band says instead of the story's £2.4m. */
+    goal?: { label: string; won: string };
+  },
 ) {
   const { w, h } = world;
   ctx.clearRect(0, 0, w, h);
@@ -91,7 +99,7 @@ export function draw(
   for (let y = PIX * 4; y < h; y += PIX * 8) for (let x = PIX * 4; x < w; x += PIX * 8) ctx.fillRect(S(x), S(y), PIX, PIX);
   skyline(ctx, w, h);
 
-  drawGoal(ctx, tctx, world, now, opts.won, opts.wonAt);
+  drawGoal(ctx, tctx, world, now, opts.won, opts.wonAt, opts.goal);
 
   // barriers
   for (const br of world.bricks) {
@@ -177,6 +185,7 @@ function drawGoal(
   now: number,
   won: boolean,
   wonAt: number,
+  labels?: { label: string; won: string },
 ) {
   const g = world.goal;
   const size = Math.max(12, Math.min(22, g.h * 0.36, g.w / 22));
@@ -188,7 +197,7 @@ function drawGoal(
     const flash = Math.floor((now - wonAt) / 150) % 2 === 0;
     box(ctx, g.x, g.y, g.w, g.h, flash ? P.red : P.sun);
     tctx.fillStyle = flash ? P.white : P.ink;
-    tctx.fillText(`WON! ${DEAL_VALUE.toUpperCase()}`, g.x + g.w / 2, g.y + g.h / 2 + 1);
+    tctx.fillText(labels?.won ?? `WON! ${DEAL_VALUE.toUpperCase()}`, g.x + g.w / 2, g.y + g.h / 2 + 1);
     return;
   }
 
@@ -203,7 +212,7 @@ function drawGoal(
     ctx.fillRect(S(x), S(g.y + g.h) - PIX * 4, PIX, PIX);
   }
   tctx.fillStyle = P.ink;
-  tctx.fillText(`THE DEAL · ${DEAL_VALUE.toUpperCase()}`, g.x + g.w / 2, g.y + g.h / 2 + 1);
+  tctx.fillText(labels?.label ?? `THE DEAL · ${DEAL_VALUE.toUpperCase()}`, g.x + g.w / 2, g.y + g.h / 2 + 1);
 }
 
 /** Draws a label that fits inside the brick, wrapping onto two lines if needed. */

@@ -9,8 +9,12 @@ import { HighScores } from './screens/HighScores';
 import { LevelOneBuyingGroup } from './levels/level1/LevelOneBuyingGroup';
 import { LevelTwoFunnelBlocks } from './levels/level2/LevelTwoFunnelBlocks';
 import { LevelThreeRevenueBreakout } from './levels/level3/LevelThreeRevenueBreakout';
+import { EndlessBlocks } from './freeplay/EndlessBlocks';
+import { EndlessBreakout } from './freeplay/EndlessBreakout';
+import { EndlessBuyers } from './freeplay/EndlessBuyers';
+import { unlockFreePlay } from './freeplay/progress';
 
-type Screen = 'room' | 'level1' | 'level2' | 'level3' | 'final';
+type Screen = 'room' | 'level1' | 'level2' | 'level3' | 'final' | 'free' | 'endless1' | 'endless2' | 'endless3';
 
 const LEVEL_OF: Record<Screen, number | null> = {
   room: null,
@@ -18,6 +22,10 @@ const LEVEL_OF: Record<Screen, number | null> = {
   level2: 2,
   level3: 3,
   final: null,
+  free: null,
+  endless1: null,
+  endless2: null,
+  endless3: null,
 };
 
 export default function App() {
@@ -36,7 +44,13 @@ export default function App() {
 
   const complete = useCallback((level: number) => {
     setCompleted((c) => (c.includes(level) ? c : [...c, level]));
+    if (level === 3) unlockFreePlay();
   }, []);
+
+  const freePlay = useCallback(() => {
+    unlockFreePlay();
+    go('free');
+  }, [go]);
 
   const backToRoom = useCallback(
     (nextMachine: number) => {
@@ -75,6 +89,7 @@ export default function App() {
       const k = e.key.toLowerCase();
       if (k === '1' || k === '2' || k === '3') jumpTo(`level${k}` as Screen);
       else if (k === 'h') jumpTo('final');
+      else if (k === 'p') freePlay();
       else if (k === 'r') playAgain();
       else if (k === 'f') {
         if (document.fullscreenElement) void document.exitFullscreen?.();
@@ -86,7 +101,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [jumpTo, playAgain]);
+  }, [jumpTo, playAgain, freePlay]);
 
   // Browsers only allow sound after the first click or key press.
   useEffect(() => {
@@ -126,7 +141,33 @@ export default function App() {
               next={next}
               completed={completed}
               onEnter={(i) => go(`level${i + 1}` as Screen)}
+              onFreePlay={freePlay}
             />
+          )}
+          {screen === 'free' && (
+            <ArcadeRoom
+              key={`free-${run}`}
+              next={0}
+              completed={[]}
+              freePlay
+              onEnter={(i) => go(`endless${i + 1}` as Screen)}
+              onStory={playAgain}
+            />
+          )}
+          {screen === 'endless1' && (
+            <Machine {...machine(0)} title={copy.freePlay.games[0].title} label={copy.freePlay.status}>
+              <EndlessBuyers onExit={() => go('free')} />
+            </Machine>
+          )}
+          {screen === 'endless2' && (
+            <Machine {...machine(1)} title={copy.freePlay.games[1].title} label={copy.freePlay.status}>
+              <EndlessBlocks onExit={() => go('free')} />
+            </Machine>
+          )}
+          {screen === 'endless3' && (
+            <Machine {...machine(2)} title={copy.freePlay.games[2].title} label={copy.freePlay.status}>
+              <EndlessBreakout onExit={() => go('free')} />
+            </Machine>
           )}
           {screen === 'level1' && (
             <Machine {...machine(0)}>
@@ -143,7 +184,7 @@ export default function App() {
               <LevelThreeRevenueBreakout key={`l3-${run}`} onComplete={() => complete(3)} onNext={() => go('final')} />
             </Machine>
           )}
-          {screen === 'final' && <HighScores key={`final-${run}`} onPlayAgain={playAgain} />}
+          {screen === 'final' && <HighScores key={`final-${run}`} onPlayAgain={playAgain} onFreePlay={freePlay} />}
         </main>
         {showKeys && <KeysHelp onClose={() => setShowKeys(false)} />}
       </div>
@@ -154,6 +195,7 @@ export default function App() {
 const KEYS: [string, string][] = [
   ['1 2 3', 'Jump to a level'],
   ['H', 'High scores'],
+  ['P', 'Free play'],
   ['R', 'Start again'],
   ['F', 'Full screen'],
   ['?', 'Show or hide this list'],

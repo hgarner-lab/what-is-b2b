@@ -43,9 +43,9 @@ const CLEAR_MS = 360;
 const HELP_AFTER_MS = 30_000; // start feeding the missing steps harder
 const WRAP_UP_AFTER_MS = 58_000;
 const STUCK_MS = 12_000; // no line for this long: offer the long bar // never let the level drag on
-const LINE_CALLS = ['', 'Line!', '2 lines!', '3 lines!', '4 lines!!'];
+export const LINE_CALLS = ['', 'Line!', '2 lines!', '3 lines!', '4 lines!!'];
 
-const cellStyle = (type: CellType): CSSProperties =>
+export const cellStyle = (type: CellType): CSSProperties =>
   type === 'filler'
     ? { backgroundImage: `url("${fillerBlock()}")` }
     : { backgroundImage: `url("${block(BLOCK[type].color)}")`, color: BLOCK[type].ink };
@@ -507,7 +507,7 @@ export function LevelTwoFunnelBlocks({
 }
 
 /** A small drawing of a piece's shape, for the Now and Next boxes. */
-function MiniPiece({ type }: { type: BlockType }) {
+export function MiniPiece({ type }: { type: BlockType }) {
   const shape = shapeOf(type);
   return (
     <span
@@ -523,7 +523,7 @@ function MiniPiece({ type }: { type: BlockType }) {
   );
 }
 
-function PadButton({
+export function PadButton({
   children,
   label,
   onPress,

@@ -338,3 +338,99 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+.readygo__note {
+  max-width: 30em;
+  font-size: clamp(16px, 1.6vw, 20px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+/* Free play ------------------------------------------------- */
+.lives {
+  display: inline-flex;
+  gap: var(--px);
+}
+
+.hud {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 6px 12px;
+}
+
+.hud__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hud__item dd {
+  margin: 0;
+}
+
+.hud__value {
+  font-size: clamp(14px, 1.6vw, 22px);
+  display: flex;
+  align-items: center;
+  min-height: calc(7 * var(--px));
+}
+
+.gameover {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(38, 32, 71, 0.55);
+  animation: screen-in var(--t-slow) steps(4) both;
+}
+
+.gameover__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  text-align: center;
+  max-width: 520px;
+}
+
+.gameover__title {
+  margin: 0;
+  font-size: clamp(24px, 3.4vw, 40px);
+  color: var(--red);
+  animation: pop 400ms steps(4) both;
+}
+
+.gameover__line {
+  margin: 0;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.gameover__score {
+  margin: 4px 0 0;
+  font-size: clamp(28px, 4vw, 48px);
+}
+
+.gameover__best {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.gameover__best--new {
+  color: var(--mint-dark);
+  font-size: 16px;
+}
+
+.gameover__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}

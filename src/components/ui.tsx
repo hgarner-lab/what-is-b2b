@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { sound } from '../audio/sound';
 import { brand } from '../content/brand';
 import { useMotionReduced } from '../hooks/usePrefs';
-import { coin, speaker, star } from '../pixel/art';
+import { coin, heart, speaker, star } from '../pixel/art';
+import { copy } from '../content/copy';
+import { formatScore, getBest, saveBest } from '../freeplay/progress';
 import { PALETTE } from '../pixel/sprite';
 import { Sprite } from '../pixel/Sprite';
 import { readPx } from '../pixel/usePx';
@@ -109,19 +111,33 @@ export function TopBar({
 /* ---------------------------------------------------------------
    READY? ... GO!  (starts every level; click to skip)
 ---------------------------------------------------------------- */
-export function ReadyGo({ number, title, onDone }: { number: number; title: string; onDone: () => void }) {
+export function ReadyGo({
+  number,
+  title,
+  onDone,
+  eyebrow,
+  note,
+}: {
+  number: number;
+  title: string;
+  onDone: () => void;
+  eyebrow?: string;
+  note?: string;
+}) {
   const done = useRef(onDone);
   done.current = onDone;
   const [go, setGo] = useState(false);
+  // With rules to read, wait longer before GO!
+  const extra = note ? 2200 : 0;
 
   useEffect(() => {
     sound.ready();
-    const t1 = window.setTimeout(() => sound.ready(), 380);
+    const t1 = window.setTimeout(() => sound.ready(), 380 + extra);
     const t2 = window.setTimeout(() => {
       setGo(true);
       sound.go();
-    }, 850);
-    const t3 = window.setTimeout(() => done.current(), 1300);
+    }, 850 + extra);
+    const t3 = window.setTimeout(() => done.current(), 1300 + extra);
     // Any key skips straight in.
     const onKey = (e: KeyboardEvent) => {
       if (e.key === ' ' || e.key === 'Enter') {
@@ -134,12 +150,13 @@ export function ReadyGo({ number, title, onDone }: { number: number; title: stri
       [t1, t2, t3].forEach((t) => window.clearTimeout(t));
       window.removeEventListener('keydown', onKey);
     };
-  }, []);
+  }, [extra]);
 
   return (
     <button type="button" className="readygo" onClick={() => done.current()}>
-      <span className="arcade readygo__level">Level {number}</span>
+      <span className="arcade readygo__level">{eyebrow ?? `Level ${number}`}</span>
       <span className="display display--lg readygo__title">{title}</span>
+      {note && <span className="readygo__note">{note}</span>}
       <span className={`arcade readygo__call ${go ? 'readygo__call--go' : 'blink'}`}>{go ? 'GO!' : 'READY?'}</span>
     </button>
   );
@@ -272,4 +289,82 @@ export function Confetti({ count = 110 }: { count?: number }) {
   }, [count, reduced]);
 
   return <canvas ref={ref} className="confetti px" aria-hidden="true" />;
+}
+
+/* ---------------------------------------------------------------
+   Free play: lives, score panel and GAME OVER
+---------------------------------------------------------------- */
+export function Lives({ left, total = 3 }: { left: number; total?: number }) {
+  return (
+    <span className="lives" aria-label={`${left} of ${total} lives left`}>
+      {Array.from({ length: total }, (_, i) => (
+        <Sprite key={i} src={heart(i < left)} w={7} h={7} />
+      ))}
+    </span>
+  );
+}
+
+export function Hud({ items }: { items: { label: string; value: ReactNode }[] }) {
+  return (
+    <dl className="hud px-panel">
+      {items.map((it) => (
+        <div key={it.label} className="hud__item">
+          <dt className="eyebrow">{it.label}</dt>
+          <dd className="arcade hud__value">{it.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+export function GameOver({
+  game,
+  score,
+  line,
+  onAgain,
+  onExit,
+}: {
+  game: number;
+  score: number;
+  line: string;
+  onAgain: () => void;
+  onExit: () => void;
+}) {
+  const F = copy.freePlay;
+  // Work out the best once, when the game ends.
+  const [result] = useState(() => {
+    const before = getBest(game);
+    const isNew = saveBest(game, score);
+    return { best: Math.max(before, score), isNew };
+  });
+  useEffect(() => {
+    if (result.isNew) sound.win();
+    else sound.uhoh();
+  }, [result.isNew]);
+
+  return (
+    <div className="gameover" role="dialog" aria-label={F.gameOver}>
+      {result.isNew && <Confetti />}
+      <div className="gameover__card px-panel">
+        <p className="arcade gameover__title">{F.gameOver}</p>
+        <p className="gameover__line">{line}</p>
+        <p className="arcade gameover__score">{formatScore(game, score)}</p>
+        {result.isNew ? (
+          <p className="arcade gameover__best gameover__best--new blink">{F.newBest}</p>
+        ) : (
+          <p className="arcade gameover__best">
+            {F.best}: {formatScore(game, result.best)}
+          </p>
+        )}
+        <div className="gameover__actions">
+          <Button onClick={onAgain} autoFocus>
+            {F.again}
+          </Button>
+          <Button variant="ghost" onClick={onExit}>
+            {F.exit}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }

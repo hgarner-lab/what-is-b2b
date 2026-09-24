@@ -82,8 +82,8 @@ function demoBuyers(c: Ctx, t: number) {
     rect(c, x, 17, 6, 3, '#8fa3d9');
   });
   // the buyers counter climbing
-  const count = Math.min(7, 1 + plan.filter(([, , at]) => f >= at + 1).length);
-  drawDigit(c, 21, 1, f > 36 ? 7 : Math.max(1, count - (f < 3 ? 1 : 0)));
+  const count = Math.min(8, 1 + plan.filter(([, , at]) => f >= at + 1).length);
+  drawDigit(c, 21, 1, f > 36 ? 8 : Math.max(1, count - (f < 3 ? 1 : 0)));
 }
 
 const DIGITS: Record<number, string[]> = {
@@ -94,6 +94,7 @@ const DIGITS: Record<number, string[]> = {
   5: ['###', '#..', '##.', '..#', '##.'],
   6: ['.##', '#..', '###', '#.#', '###'],
   7: ['###', '..#', '.#.', '.#.', '.#.'],
+  8: ['###', '#.#', '###', '#.#', '###'],
 };
 
 function drawDigit(c: Ctx, x: number, y: number, n: number) {

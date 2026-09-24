@@ -324,6 +324,10 @@ const HAIR: Record<string, (rows: string[][]) => void> = {
     g[4] = [...'.khhhhhhhhhhhhk.'];
     g[5] = [...'.khhsssssssshhk.'];
   },
+  shades: (g) => {
+    g[3] = [...'...khhhhhhhhk...'];
+    g[7] = [...'..kskkkssskkkk..'];
+  },
   crown: (g) => {
     g[0] = [...'....y..yy..y....'];
     g[1] = [...'....yyyyyyyy....'];
@@ -357,6 +361,11 @@ const PROPS: Record<string, Prop> = {
     x: 13,
     y: 13,
     rows: ['..kkkk..', '..k..k..', 'kkkkkkkk', 'knnyynnk', 'knnnnnnk', 'knnnnnnk', 'kkkkkkkk'],
+  },
+  padlock: {
+    x: 14,
+    y: 9,
+    rows: ['.kkkk.', 'k....k', 'k....k', 'kkkkkk', 'kyyyyk', 'kyykyk', 'kyykyk', 'kkkkkk'],
   },
   mug: {
     x: 14,
@@ -401,6 +410,11 @@ export const LOOKS: Record<string, Look> = {
     hair: 'curly',
     prop: 'mug',
     colors: { h: '#ff8c3a', s: '#e0a47a', S: '#c07f55', c: P.sun, C: P.sunDark, w: P.sun, t: P.orange },
+  },
+  security: {
+    hair: 'shades',
+    prop: 'padlock',
+    colors: { h: '#1f1a2e', s: '#c98a5e', S: '#a86c43', c: '#5b5680', C: '#433f63', w: P.white, t: P.mint },
   },
   ceo: {
     hair: 'crown',
@@ -553,3 +567,11 @@ export function lightString(): string {
     }
   });
 }
+
+/** A life in free play. */
+export const heart = (full = true) =>
+  fromRows(
+    `heart-${full}`,
+    ['.kk.kk.', 'krrkrrk', 'krwrrrk', 'krrrrrk', '.krrrk.', '..krk..', '...k...'],
+    full ? { k: P.ink, r: P.red, w: '#ff8aa0' } : { k: P.greyDark, r: '#e9e6f2', w: '#e9e6f2' },
+  );
