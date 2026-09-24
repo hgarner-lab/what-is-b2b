@@ -56,10 +56,12 @@ export function FinalRecap({ onPlayAgain }: { onPlayAgain: () => void }) {
             {copy.final.recap}
           </Button>
         </div>
-        {(brand.logoSrc || brand.credit) && (
-          <div className="final__brand">
-            {brand.logoSrc && <img src={brand.logoSrc} alt={brand.logoAlt} />}
-            {brand.credit && <span>{brand.credit}</span>}
+        {(brand.logoSrc || brand.taglineSrc) && (
+          <div className="final__brand" style={{ animationDelay: '2500ms' }}>
+            {brand.logoSrc && <img src={brand.logoSrc} alt={brand.logoAlt} className="final__logo" />}
+            {brand.taglineSrc && (
+              <img src={brand.taglineSrc} alt={brand.taglineAlt} className="final__tagline" />
+            )}
           </div>
         )}
       </div>

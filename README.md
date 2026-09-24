@@ -43,11 +43,16 @@ Level-specific words live next to each game:
 
 ## Branding
 
-There are no official McCann files in the repo yet, so no logo is shown.
-To add one, put the approved file in `public/brand/` and set `logoSrc` in
-[`src/content/brand.ts`](src/content/brand.ts). The red accent is one CSS
-variable, `--red`, in `src/styles/global.css`. Swap it for the official
-value when you have it.
+The supplied logos live in `public/brand/`:
+
+- `mccann-logo-white.png` shows small in the top-left corner and on the final screen.
+- `truth-well-told-white.png` is a white, trimmed copy of the supplied
+  `truth-well-told-original.jpeg`, so it shows up on the dark background. It
+  appears next to the McCann logo on the final screen.
+
+Paths are set in [`src/content/brand.ts`](src/content/brand.ts). The red
+accent is one CSS variable, `--red`, in `src/styles/global.css`. Swap it for
+the official value if it's different.
 
 ## Controls and accessibility
 

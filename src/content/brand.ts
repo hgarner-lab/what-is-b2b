@@ -1,14 +1,20 @@
 /**
- * Brand slot.
+ * Brand settings. Files live in /public/brand.
  *
- * No official logo files are in the repo yet, so none is shown.
- * To add one: put the supplied file in /public/brand (for example
- * /public/brand/logo.svg) and set `logoSrc` to '/brand/logo.svg'.
- * It appears small in the top-left corner and on the final screen.
+ * - mccann-logo-white.png: supplied McCann wordmark (white, transparent).
+ * - truth-well-told-white.png: white, trimmed copy of the supplied
+ *   truth-well-told-original.jpeg, so it sits on the dark background.
+ *
+ * Set any of these to null to hide it.
  */
-export const brand: { logoSrc: string | null; logoAlt: string; credit: string | null } = {
-  logoSrc: null,
+export const brand: {
+  logoSrc: string | null;
+  logoAlt: string;
+  taglineSrc: string | null;
+  taglineAlt: string;
+} = {
+  logoSrc: '/brand/mccann-logo-white.png',
   logoAlt: 'McCann',
-  // Optional small text credit on the final screen, e.g. 'A McCann experience'.
-  credit: null,
+  taglineSrc: '/brand/truth-well-told-white.png',
+  taglineAlt: 'Truth Well Told',
 };

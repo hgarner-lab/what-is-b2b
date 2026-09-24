@@ -59,11 +59,8 @@ export function TopBar({
   return (
     <header className="topbar">
       <div className="topbar__brand">
-        {brand.logoSrc ? (
-          <img src={brand.logoSrc} alt={brand.logoAlt} className="topbar__logo" />
-        ) : (
-          <span className="topbar__wordmark">What even is B2B?</span>
-        )}
+        {brand.logoSrc && <img src={brand.logoSrc} alt={brand.logoAlt} className="topbar__logo" />}
+        <span className="topbar__wordmark">What even is B2B?</span>
       </div>
 
       <ol className="topbar__progress" aria-label="Progress">

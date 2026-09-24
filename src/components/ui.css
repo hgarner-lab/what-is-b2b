@@ -67,12 +67,20 @@
 .topbar__brand {
   justify-self: start;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .topbar__logo {
-  height: 22px;
+  height: 18px;
   width: auto;
   display: block;
+}
+
+.topbar__logo + .topbar__wordmark {
+  padding-left: 14px;
+  border-left: 1px solid var(--line-strong);
 }
 
 .topbar__wordmark {
@@ -143,9 +151,18 @@
   color: var(--fg-faint);
 }
 
+@media (max-width: 860px) {
+  .topbar__logo + .topbar__wordmark {
+    display: none;
+  }
+}
+
 @media (max-width: 560px) {
   .topbar__wordmark {
     display: none;
+  }
+  .topbar__logo {
+    height: 14px;
   }
   .sound-toggle__label {
     display: none;

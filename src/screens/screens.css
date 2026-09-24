@@ -157,16 +157,23 @@
 .final__brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: var(--fg-faint);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  gap: 18px;
+  padding-top: 8px;
+  animation: screen-in var(--t-slow) var(--ease-out) both;
 }
 
-.final__brand img {
-  height: 20px;
+.final__logo {
+  height: 22px;
   width: auto;
+}
+
+.final__tagline {
+  height: 13px;
+  width: auto;
+  opacity: 0.6;
+  padding-left: 18px;
+  border-left: 1px solid var(--line-strong);
+  box-sizing: content-box;
 }
 
 /* Recap -------------------------------------------------------- */
