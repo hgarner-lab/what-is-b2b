@@ -1,4 +1,5 @@
-export type Barrier = { label: string; fix: string };
+/** `short` is used when the barriers are narrow (phones). */
+export type Barrier = { label: string; short?: string; fix: string };
 
 export type Layer = {
   id: 'awareness' | 'confidence' | 'commercial';
@@ -18,10 +19,10 @@ export const LAYERS: Layer[] = [
     fill: '#58c4ff',
     ink: '#262047',
     barriers: [
-      { label: 'Never heard of you', fix: 'Brand' },
+      { label: 'Never heard of you', short: 'Who are you?', fix: 'Brand' },
       { label: 'Not relevant', fix: 'The right message' },
       { label: 'Don’t get it', fix: 'A clear story' },
-      { label: 'Not on the list', fix: 'Reputation' },
+      { label: 'Not on the list', short: 'Not listed', fix: 'Reputation' },
     ],
   },
   {
@@ -29,7 +30,7 @@ export const LAYERS: Layer[] = [
     fill: '#9c82ff',
     ink: '#262047',
     barriers: [
-      { label: 'Don’t trust you', fix: 'Reviews' },
+      { label: 'Don’t trust you', short: 'No trust', fix: 'Reviews' },
       { label: 'Too risky', fix: 'Guarantees' },
       { label: 'Need proof', fix: 'Case studies' },
       { label: 'Why change?', fix: 'A sharp insight' },
@@ -40,10 +41,10 @@ export const LAYERS: Layer[] = [
     fill: '#ff7b9c',
     ink: '#262047',
     barriers: [
-      { label: 'No business case', fix: 'ROI calculator' },
+      { label: 'No business case', short: 'No case', fix: 'ROI calculator' },
       { label: 'No urgency', fix: 'A reason to act now' },
-      { label: 'No internal agreement', fix: 'Something for every stakeholder' },
-      { label: 'Procurement', fix: 'Answers ready to go' },
+      { label: 'No internal agreement', short: 'No agreement', fix: 'Something for every stakeholder' },
+      { label: 'Procurement', short: 'Paperwork', fix: 'Answers ready to go' },
     ],
   },
 ];

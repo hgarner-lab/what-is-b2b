@@ -106,7 +106,9 @@ export function draw(
     if (!br.alive) continue;
     const layer = LAYERS[br.layer];
     box(ctx, br.x, br.y, br.w, br.h, layer.fill);
-    drawLabel(tctx, layer.barriers[br.index].label.toUpperCase(), br.x, br.y, br.w, br.h, layer.ink);
+    const barrier = layer.barriers[br.index];
+    const text = br.w < 130 && barrier.short ? barrier.short : barrier.label;
+    drawLabel(tctx, text.toUpperCase(), br.x, br.y, br.w, br.h, layer.ink);
   }
 
   // sparks
@@ -225,21 +227,21 @@ function drawLabel(
   h: number,
   ink: string,
 ) {
-  const maxW = w - 20;
+  const maxW = w - (w < 130 ? 8 : 20);
   let size = Math.min(24, h * 0.46);
   let lines = [text];
   ctx.fillStyle = ink;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  for (; size >= 11; size -= 1) {
+  for (; size >= 9; size -= 1) {
     ctx.font = `700 ${size}px ${PIXEL_FONT}`;
     if (ctx.measureText(text).width <= maxW) {
       lines = [text];
       break;
     }
     const words = text.split(' ');
-    if (words.length > 1 && size * 2.1 <= h - 8) {
+    if (words.length > 1 && size * 2.1 <= h - 4) {
       let best: string[] | null = null;
       let bestW = Infinity;
       for (let i = 1; i < words.length; i++) {

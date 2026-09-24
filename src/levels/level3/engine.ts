@@ -69,14 +69,18 @@ export function layout(world: World, w: number, h: number, pix = 4) {
   world.w = w;
   world.h = h;
 
-  const pad = Math.max(10, Math.min(20, w * 0.025));
-  const cols = w < 520 ? 2 : 4;
-  const gap = w < 520 ? 6 : 8;
+  // Always four barriers to a row, so on phones they take up three short
+  // rows instead of six tall ones. Heights follow the play area, so the
+  // barriers stay in the top half and the ball has room to move.
+  const narrow = w < 520;
+  const pad = Math.max(8, Math.min(20, w * 0.025));
+  const cols = 4;
+  const gap = narrow ? 4 : 8;
   const layerGap = gap * 2.2;
-  const brickH = Math.max(40, Math.min(60, h * 0.085));
+  const brickH = Math.max(narrow ? 26 : 34, Math.min(60, h * 0.075));
   const brickW = (w - pad * 2 - gap * (cols - 1)) / cols;
 
-  world.goal = { x: pad, y: pad, w: w - pad * 2, h: Math.max(40, Math.min(56, h * 0.08)) };
+  world.goal = { x: pad, y: pad, w: w - pad * 2, h: Math.max(narrow ? 30 : 40, Math.min(56, h * 0.075)) };
 
   // Deal at the top, then commercial, confidence and awareness nearest the paddle.
   let y = world.goal.y + world.goal.h + layerGap * 1.3;
