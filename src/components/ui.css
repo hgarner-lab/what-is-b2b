@@ -6,8 +6,8 @@
   cursor: pointer;
   background: transparent;
   border-style: solid;
-  border-width: 8px 8px 12px;
-  border-image: var(--px-btn) 2 2 3 fill / 8px 8px 12px stretch;
+  border-width: calc(2 * var(--px)) calc(2 * var(--px)) calc(3 * var(--px));
+  border-image: var(--px-btn) 2 2 3 fill / calc(2 * var(--px)) calc(2 * var(--px)) calc(3 * var(--px)) stretch;
   padding: 8px 14px 6px;
   min-height: 60px;
   font-family: var(--font-arcade);
@@ -20,12 +20,12 @@
 }
 
 .pbtn:hover {
-  transform: translateY(-2px);
+  transform: translateY(calc(-1 * var(--px)));
 }
 
 .pbtn:active {
   border-image-source: var(--px-btn-down);
-  transform: translateY(4px);
+  transform: translateY(var(--px));
 }
 
 .pbtn--coin {
@@ -101,7 +101,7 @@
 
 @keyframes coin-bob {
   50% {
-    transform: translateY(-4px);
+    transform: translateY(calc(-1 * var(--px)));
   }
 }
 
@@ -150,7 +150,7 @@
   color: var(--ink);
   background-color: var(--sky-pale);
   background-image: var(--px-screen);
-  background-size: 16px 16px;
+  background-size: calc(4 * var(--px)) calc(4 * var(--px));
 }
 
 .readygo__level {
@@ -288,4 +288,53 @@
   height: 100vh;
   pointer-events: none;
   z-index: 50;
+}
+
+/* Presenter keys -------------------------------------------- */
+.keys-help {
+  position: fixed;
+  right: var(--gutter);
+  bottom: var(--gutter);
+  z-index: 70;
+  padding: 10px 14px;
+  min-width: 260px;
+  animation: pop-small 200ms steps(3) both;
+}
+
+.keys-help__title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--red);
+}
+
+.keys-help dl {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.keys-help__row {
+  display: grid;
+  grid-template-columns: 5.5em 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.keys-help dt {
+  font-size: 11px;
+}
+
+.keys-help dd {
+  margin: 0;
+  font-size: 15px;
+}
+
+.keys-help__close {
+  margin-top: 10px;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
 }

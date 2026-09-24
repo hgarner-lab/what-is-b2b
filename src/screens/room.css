@@ -4,6 +4,21 @@
   will-change: transform;
 }
 
+.room__lights {
+  height: calc(10 * var(--px));
+  background-image: var(--px-lights);
+  background-size: calc(32 * var(--px)) calc(20 * var(--px));
+  background-repeat: repeat-x;
+  image-rendering: pixelated;
+  animation: twinkle 1.2s steps(1) infinite;
+}
+
+@keyframes twinkle {
+  50% {
+    background-position-y: calc(-10 * var(--px));
+  }
+}
+
 .room__wall {
   flex: 1;
   display: flex;
@@ -51,6 +66,7 @@
 }
 
 .cabwrap {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -59,8 +75,8 @@
 
 .cab {
   position: relative;
-  width: clamp(92px, min(22vw, calc((100svh - 400px) / 1.65)), 220px);
-  aspect-ratio: 40 / 66;
+  width: calc(40 * var(--px));
+  height: calc(66 * var(--px));
   container-type: inline-size;
   transition: transform var(--t-fast) steps(2);
 }
@@ -73,12 +89,12 @@
 .cabwrap--ready .cab:hover,
 .cabwrap--ready .cab:focus-visible {
   animation: none;
-  transform: translateY(-6px);
+  transform: translateY(calc(-2 * var(--px)));
 }
 
 @keyframes cab-hop {
   50% {
-    transform: translateY(-4px);
+    transform: translateY(calc(-1 * var(--px)));
   }
 }
 
@@ -102,38 +118,47 @@
 
 .cab__screen {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6cqw;
-  padding: 3cqw;
-  text-align: center;
-  color: var(--ink);
+  overflow: hidden;
 }
 
-.cab__name {
-  font-family: var(--font-pixel);
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 8.5cqw;
-  line-height: 1;
+.cab__demo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cab__demo--dim {
+  filter: saturate(0.35) brightness(1.05);
+  opacity: 0.8;
 }
 
 .cab__status {
-  font-size: 5.2cqw;
-  color: var(--red);
-  display: inline-flex;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 3cqw;
+  padding: 1.5cqw 0 1cqw;
+  font-size: 5.5cqw;
+  line-height: 1;
+  white-space: nowrap;
+  background: var(--ink);
+  color: var(--sun);
 }
 
 .cab__status--locked {
-  color: var(--ink-faint);
+  color: #c9c3dd;
 }
 
 .cab__status--done {
-  color: var(--mint-dark);
+  color: var(--mint);
+}
+
+.cab__status--done img {
+  filter: invert(1);
 }
 
 .cab--flash .cab__screen {
@@ -147,27 +172,36 @@
 }
 
 .cab__caption {
-  display: none;
+  position: absolute;
+  top: calc(100% + 3 * var(--px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  width: max-content;
+  padding: 2px 6px;
+  background: var(--paper);
+  border: var(--px) solid var(--ink);
+  display: block;
   font-family: var(--font-pixel);
   font-weight: 700;
-  font-size: 13px;
+  font-size: clamp(12px, 1.2vw, 16px);
   text-transform: uppercase;
   text-align: center;
-  max-width: 100px;
+  max-width: calc(40 * var(--px));
   line-height: 1.05;
 }
 
 /* Floor -------------------------------------------------------- */
 .room__floor {
-  min-height: clamp(120px, 20vh, 190px);
+  min-height: clamp(150px, 24vh, 220px);
   background-color: #efe8ff;
   background-image: var(--px-floor);
-  background-size: 64px 64px;
-  border-top: 6px solid var(--ink);
+  background-size: calc(16 * var(--px)) calc(16 * var(--px));
+  border-top: var(--px) solid var(--ink);
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: clamp(16px, 3vh, 32px) var(--gutter);
+  padding: calc(3.6em + 6 * var(--px)) var(--gutter) clamp(16px, 3vh, 32px);
 }
 
 .room__cta {
@@ -196,19 +230,14 @@
 
 @media (max-width: 700px) {
   .room__wall {
-    justify-content: center;
+    padding-left: 4px;
+    padding-right: 4px;
   }
-  .cab {
-    width: min(28vw, 130px);
-  }
-  .cab__name {
-    display: none;
+  .room__row {
+    gap: 4px;
   }
   .cab__status {
-    font-size: 7cqw;
-  }
-  .cab__caption {
-    display: block;
+    font-size: 6cqw;
   }
   .room__row {
     margin-bottom: 0;
@@ -217,6 +246,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .room__sign,
+  .room__lights,
   .cabwrap--ready .cab {
     animation: none;
   }

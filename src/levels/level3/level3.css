@@ -44,7 +44,7 @@
   width: 100%;
   height: clamp(340px, calc(100svh - 290px), 660px);
   overflow: hidden;
-  border: 6px solid var(--ink);
+  border: var(--px) solid var(--ink);
   touch-action: none;
   cursor: none;
   user-select: none;
@@ -54,6 +54,13 @@
 .l3__canvas-wrap canvas {
   display: block;
   image-rendering: pixelated;
+}
+
+.l3__canvas-wrap .l3__text {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  image-rendering: auto;
 }
 
 /* Panel -------------------------------------------------------- */
@@ -109,7 +116,7 @@
   height: 22px;
   display: grid;
   place-items: center;
-  border: 3px dashed var(--ink-faint);
+  border: var(--px) solid var(--ink-faint);
   font-size: 13px;
   flex-shrink: 0;
 }
@@ -120,7 +127,7 @@
 
 .ticker__item.is-done .ticker__mark {
   background: var(--mint);
-  border: 3px solid var(--ink);
+  border: var(--px) solid var(--ink);
   color: var(--ink);
   animation: pop-small 400ms steps(4);
 }
@@ -202,10 +209,6 @@
     width: 14px;
     height: 14px;
     font-size: 9px;
-    border-width: 2px;
-  }
-  .ticker__item.is-done .ticker__mark {
-    border-width: 2px;
   }
   .l3__keys,
   .l3__panel .toast-slot {

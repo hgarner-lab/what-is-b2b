@@ -150,3 +150,60 @@
     grid-template-columns: 1fr;
   }
 }
+
+.hs__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  width: 100%;
+}
+
+.hs__left {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 22px);
+  min-width: 0;
+}
+
+.hs__qr {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  flex-shrink: 0;
+  animation: screen-in var(--t-slow) steps(5) both;
+}
+
+.hs__qr figcaption {
+  font-size: 10px;
+}
+
+@media (max-width: 900px), (max-height: 780px) {
+  .hs__qr {
+    display: none;
+  }
+}
+
+/* Short laptop screens: keep the whole board and sign-off on one screen */
+@media (max-height: 780px) and (min-width: 761px) {
+  .hs .center-stack {
+    padding: 8px 0;
+    gap: 12px;
+  }
+  .hs__thats {
+    font-size: 56px;
+  }
+  .hs__table {
+    margin-top: 8px;
+    gap: 6px;
+  }
+  .hs__row {
+    padding-top: 6px;
+  }
+  .hs__left {
+    gap: 12px;
+  }
+}

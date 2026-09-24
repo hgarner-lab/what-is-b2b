@@ -6,14 +6,14 @@ import '@fontsource/pixelify-sans/700.css';
 import '@fontsource/nunito/600.css';
 import '@fontsource/nunito/800.css';
 import App from './App';
+import { ShareCard } from './dev/ShareCard';
 import { SpriteSheet } from './dev/SpriteSheet';
 import { initPixelTheme } from './pixel/theme';
 import './styles/global.css';
 
 initPixelTheme();
 
-const showSprites = new URLSearchParams(window.location.search).has('sprites');
+const params = new URLSearchParams(window.location.search);
+const page = params.has('sprites') ? <SpriteSheet /> : params.has('card') ? <ShareCard /> : <App />;
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>{showSprites ? <SpriteSheet /> : <App />}</StrictMode>,
-);
+createRoot(document.getElementById('root')!).render(<StrictMode>{page}</StrictMode>);

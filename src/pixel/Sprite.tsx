@@ -1,11 +1,15 @@
 import type { CSSProperties } from 'react';
 
-/** A pixel-art image shown at a whole-number scale. */
+/**
+ * A pixel-art image drawn at the shared pixel size (--px), so every sprite
+ * in the game has the same size pixels. `scale` is for rare cases (such as
+ * a big trophy) that deliberately show art at a whole multiple.
+ */
 export function Sprite({
   src,
   w,
   h,
-  scale = 4,
+  scale = 1,
   className = '',
   style,
   alt = '',
@@ -21,12 +25,14 @@ export function Sprite({
   return (
     <img
       src={src}
-      width={w * scale}
-      height={h * scale}
       alt={alt}
       aria-hidden={alt ? undefined : true}
       className={`px ${className}`}
-      style={style}
+      style={{
+        width: `calc(${w * scale} * var(--px))`,
+        height: `calc(${h * scale} * var(--px))`,
+        ...style,
+      }}
       draggable={false}
     />
   );

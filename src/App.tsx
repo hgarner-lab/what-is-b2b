@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Machine } from './components/Machine';
+import { sound } from './audio/sound';
 import { TopBar } from './components/ui';
 import { copy } from './content/copy';
 import { ReducedMotionContext, useReducedMotion, useSoundPref } from './hooks/usePrefs';
@@ -52,6 +53,52 @@ export default function App() {
     go('room');
   }, [go]);
 
+  const jumpTo = useCallback(
+    (to: Screen) => {
+      const level = LEVEL_OF[to];
+      setCompleted(level ? [1, 2, 3].filter((n) => n < level) : to === 'final' ? [1, 2, 3] : []);
+      setRun((r) => r + 1);
+      setNext(level ? level - 1 : 0);
+      go(to);
+    },
+    [go],
+  );
+
+  // Presenter shortcuts: 1-3 jump to a level, H high scores, R restart,
+  // F full screen, ? shows the list.
+  const [showKeys, setShowKeys] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      const k = e.key.toLowerCase();
+      if (k === '1' || k === '2' || k === '3') jumpTo(`level${k}` as Screen);
+      else if (k === 'h') jumpTo('final');
+      else if (k === 'r') playAgain();
+      else if (k === 'f') {
+        if (document.fullscreenElement) void document.exitFullscreen?.();
+        else void document.documentElement.requestFullscreen?.().catch(() => {});
+      } else if (k === '?' || (k === '/' && e.shiftKey)) setShowKeys((v) => !v);
+      else if (k === 'escape') setShowKeys(false);
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [jumpTo, playAgain]);
+
+  // Browsers only allow sound after the first click or key press.
+  useEffect(() => {
+    const unlock = () => sound.unlock();
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+  }, []);
+
   // Move keyboard focus to the new screen so screen readers follow along.
   useEffect(() => {
     stageRef.current?.focus({ preventScroll: true });
@@ -96,9 +143,37 @@ export default function App() {
               <LevelThreeRevenueBreakout key={`l3-${run}`} onComplete={() => complete(3)} onNext={() => go('final')} />
             </Machine>
           )}
-          {screen === 'final' && <HighScores onPlayAgain={playAgain} />}
+          {screen === 'final' && <HighScores key={`final-${run}`} onPlayAgain={playAgain} />}
         </main>
+        {showKeys && <KeysHelp onClose={() => setShowKeys(false)} />}
       </div>
     </ReducedMotionContext.Provider>
+  );
+}
+
+const KEYS: [string, string][] = [
+  ['1 2 3', 'Jump to a level'],
+  ['H', 'High scores'],
+  ['R', 'Start again'],
+  ['F', 'Full screen'],
+  ['?', 'Show or hide this list'],
+];
+
+function KeysHelp({ onClose }: { onClose: () => void }) {
+  return (
+    <aside className="keys-help px-panel" role="dialog" aria-label="Presenter shortcuts">
+      <p className="arcade keys-help__title">Presenter keys</p>
+      <dl>
+        {KEYS.map(([k, what]) => (
+          <div key={k} className="keys-help__row">
+            <dt className="arcade">{k}</dt>
+            <dd>{what}</dd>
+          </div>
+        ))}
+      </dl>
+      <button type="button" className="keys-help__close" onClick={onClose}>
+        Close
+      </button>
+    </aside>
   );
 }

@@ -4,9 +4,11 @@
 import { BLOCK, BLOCKS, type BlockType } from './blocks';
 
 export const COLS = 10;
-export const ROWS = 20;
+export const ROWS = 18;
 
-export type Cell = { type: BlockType; id: number } | null;
+/** 'filler' is the grey starter block: it isn't any kind of marketing. */
+export type CellType = BlockType | 'filler';
+export type Cell = { type: CellType; id: number } | null;
 export type Board = Cell[][];
 export type Shape = number[][];
 
@@ -57,14 +59,19 @@ export function emptyBoard(): Board {
 }
 
 /**
- * The board starts with a row of Awareness that's missing four squares.
- * The first piece is an Awareness bar that fits the gap exactly, so the
- * first line cleared is all awareness.
+ * The board starts with a row of Awareness missing four squares, and two
+ * grey rows above it with a few gaps. The first piece is an Awareness bar
+ * that fits the bottom gap exactly, so the first line cleared is all
+ * awareness. The grey rows then clear quickly with a mix of marketing,
+ * which gets the journey moving early.
  */
 export function openingBoard(): Board {
   const board = emptyBoard();
+  const gap = (c: number) => c >= OPENING_GAP.x && c < OPENING_GAP.x + OPENING_GAP.w;
   for (let c = 0; c < COLS; c++) {
-    if (c < OPENING_GAP.x || c >= OPENING_GAP.x + OPENING_GAP.w) board[ROWS - 1][c] = { type: 'awareness', id: -1 };
+    if (!gap(c)) board[ROWS - 1][c] = { type: 'awareness', id: -1 };
+    if (!gap(c) && c !== 0) board[ROWS - 2][c] = { type: 'filler', id: -2 };
+    if (!gap(c) && c !== 0 && c !== COLS - 1) board[ROWS - 3][c] = { type: 'filler', id: -3 };
   }
   return board;
 }

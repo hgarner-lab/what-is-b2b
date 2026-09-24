@@ -5,6 +5,7 @@ import { useMotionReduced } from '../hooks/usePrefs';
 import { coin, speaker, star } from '../pixel/art';
 import { PALETTE } from '../pixel/sprite';
 import { Sprite } from '../pixel/Sprite';
+import { readPx } from '../pixel/usePx';
 import './ui.css';
 
 /* ---------------------------------------------------------------
@@ -79,7 +80,7 @@ export function TopBar({
           const current = level === n;
           return (
             <li key={n} className={`coinpip ${current ? 'coinpip--current' : ''}`} aria-current={current ? 'step' : undefined}>
-              <Sprite src={coin(done)} w={8} h={8} scale={3} />
+              <Sprite src={coin(done)} w={8} h={8} />
               <span className="sr-only">
                 Level {n}
                 {done ? ', complete' : current ? ', playing' : ''}
@@ -98,7 +99,7 @@ export function TopBar({
           onToggleSound();
         }}
       >
-        <Sprite src={speaker(soundOn)} w={8} h={7} scale={3} />
+        <Sprite src={speaker(soundOn)} w={8} h={7} />
         <span className="sound-toggle__label">{soundOn ? 'Sound on' : 'Sound off'}</span>
       </button>
     </header>
@@ -115,13 +116,24 @@ export function ReadyGo({ number, title, onDone }: { number: number; title: stri
 
   useEffect(() => {
     sound.ready();
-    const t1 = window.setTimeout(() => sound.ready(), 450);
+    const t1 = window.setTimeout(() => sound.ready(), 380);
     const t2 = window.setTimeout(() => {
       setGo(true);
       sound.go();
-    }, 1100);
-    const t3 = window.setTimeout(() => done.current(), 1650);
-    return () => [t1, t2, t3].forEach((t) => window.clearTimeout(t));
+    }, 850);
+    const t3 = window.setTimeout(() => done.current(), 1300);
+    // Any key skips straight in.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        done.current();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      [t1, t2, t3].forEach((t) => window.clearTimeout(t));
+      window.removeEventListener('keydown', onKey);
+    };
   }, []);
 
   return (
@@ -179,9 +191,9 @@ export function EndCard({
     <section className="end-card" aria-live="polite">
       <Confetti />
       <p className="end-card__banner arcade">
-        <Sprite src={star()} w={7} h={7} scale={4} />
+        <Sprite src={star()} w={7} h={7} />
         <span>{banner}</span>
-        <Sprite src={star()} w={7} h={7} scale={4} />
+        <Sprite src={star()} w={7} h={7} />
       </p>
       {score && <ScoreStrip from={score[0]} to={score[1]} />}
       <h2 className={`display display--${size} end-card__headline`}>{headline}</h2>
@@ -225,7 +237,7 @@ export function Confetti({ count = 110 }: { count?: number }) {
     if (!canvas || reduced) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const scale = 4;
+    const scale = readPx();
     canvas.width = Math.ceil(w / scale);
     canvas.height = Math.ceil(h / scale);
     const ctx = canvas.getContext('2d')!;

@@ -127,14 +127,6 @@ export const floorTile = () =>
     p.rect(8, 8, 8, 8, '#d9ceff');
   });
 
-export const wellTile = () =>
-  paint('well', 10, 10, (p) => {
-    p.rect(0, 0, 10, 10, '#ece6ff');
-    p.rect(0, 0, 10, 1, '#ddd4ff');
-    p.rect(0, 0, 1, 10, '#ddd4ff');
-    p.px(5, 5, '#ddd4ff');
-  });
-
 export const screenTile = () =>
   paint('screen-scan', 4, 4, (p) => {
     p.rect(0, 0, 4, 4, '#f4fbff');
@@ -250,28 +242,40 @@ export const ball = () =>
   });
 
 /** One square of a falling block, bevelled like a classic block game. */
-export function block(color: string): string {
-  return paint(`block-${color}`, 10, 10, (p) => {
-    p.rect(0, 0, 10, 10, P.ink);
-    p.rect(1, 1, 8, 8, color);
-    p.rect(1, 1, 8, 1, shade(color, 0.5));
-    p.rect(1, 1, 1, 8, shade(color, 0.5));
-    p.rect(1, 8, 8, 1, shade(color, -0.3));
-    p.rect(8, 1, 1, 8, shade(color, -0.3));
-    p.px(2, 2, P.white);
+export function block(color: string, size = 8): string {
+  return paint(`block-${color}-${size}`, size, size, (p) => {
+    const n = size;
+    p.rect(0, 0, n, n, P.ink);
+    p.rect(1, 1, n - 2, n - 2, color);
+    p.rect(1, 1, n - 2, 1, shade(color, 0.5));
+    p.rect(1, 1, 1, n - 2, shade(color, 0.5));
+    p.rect(1, n - 2, n - 2, 1, shade(color, -0.3));
+    p.rect(n - 2, 1, 1, n - 2, shade(color, -0.3));
+    if (n >= 7) p.px(2, 2, P.white);
   });
 }
 
 export function ghostBlock(color: string): string {
-  return paint(`ghost-${color}`, 10, 10, (p) => {
-    for (let i = 0; i < 10; i += 2) {
+  return paint(`ghost-${color}`, 8, 8, (p) => {
+    for (let i = 0; i < 8; i += 2) {
       p.px(i, 0, color);
-      p.px(i + 1, 9, color);
+      p.px(i + 1, 7, color);
       p.px(0, i + 1, color);
-      p.px(9, i, color);
+      p.px(7, i, color);
     }
   });
 }
+
+/** Grey starter block in the falling-blocks level: not any kind of marketing. */
+export const fillerBlock = () => block('#cfc9e0');
+
+/** The empty board background, one tile per square. */
+export const wellCell = () =>
+  paint('well-cell', 8, 8, (p) => {
+    p.rect(0, 0, 8, 8, '#ece6ff');
+    p.rect(0, 0, 8, 1, '#ddd4ff');
+    p.rect(0, 0, 1, 8, '#ddd4ff');
+  });
 
 /* ------------------------------------------------------------------
    People (22 × 20). Same body, different hair, colours and props.
@@ -445,3 +449,107 @@ export function person(id: string, happy = false): string {
 }
 
 export const PERSON_SIZE = { w: 22, h: 20 };
+
+/* ------------------------------------------------------------------
+   Office decor for the Level 1 cubicles
+------------------------------------------------------------------- */
+
+export type WindowView = 'clouds' | 'city' | 'sun';
+
+export function officeWindow(view: WindowView): string {
+  return paint(`win-${view}`, 16, 11, (p) => {
+    p.rect(0, 0, 16, 11, P.ink);
+    p.rect(1, 1, 14, 9, P.white);
+    p.rect(2, 2, 12, 7, '#bfe9ff');
+    if (view === 'clouds') {
+      p.rect(3, 4, 4, 1, P.white);
+      p.rect(4, 3, 2, 1, P.white);
+      p.rect(9, 6, 4, 1, P.white);
+      p.rect(10, 5, 2, 1, P.white);
+    } else if (view === 'city') {
+      p.rect(2, 6, 3, 3, '#8fa3d9');
+      p.rect(5, 4, 2, 5, '#6f84c4');
+      p.rect(7, 5, 3, 4, '#8fa3d9');
+      p.rect(10, 3, 2, 6, '#6f84c4');
+      p.rect(12, 6, 2, 3, '#8fa3d9');
+      p.px(5, 5, P.sun);
+      p.px(10, 4, P.sun);
+      p.px(11, 6, P.sun);
+    } else {
+      p.rect(9, 3, 3, 3, P.sun);
+      p.px(10, 2, P.sun);
+      p.px(8, 4, P.sun);
+      p.px(12, 4, P.sun);
+      p.px(10, 6, P.sun);
+      p.rect(2, 8, 12, 1, P.mint);
+    }
+    p.rect(7, 1, 2, 9, P.white); // window bar
+    p.rect(0, 10, 16, 1, P.ink);
+  });
+}
+
+export const plant = () =>
+  fromRows(
+    'plant',
+    ['...g.g..', '..gGgG..', '.gGgGgg.', 'gGg.gGgG', '.gGgGg..', '..gGg...', '...g....', 'kkkkkkkk', 'kccccCck', '.kccccCk', '.kccccCk', '..kkkkk.'],
+    { g: P.mint, G: P.mintDark, k: P.ink, c: P.coral, C: '#d94a72' },
+  );
+
+export const clock = () =>
+  fromRows('clock', ['.kkkkk.', 'kwwkwwk', 'kwwkwwk', 'kwwkkwk', 'kwwwwwk', 'kwwwwwk', '.kkkkk.'], {
+    k: P.ink,
+    w: P.white,
+  });
+
+export function poster(kind: 'chart' | 'star' | 'target'): string {
+  return paint(`poster-${kind}`, 10, 12, (p) => {
+    p.rect(0, 0, 10, 12, P.ink);
+    p.rect(1, 1, 8, 10, kind === 'star' ? '#fff1b8' : P.white);
+    if (kind === 'chart') {
+      p.rect(2, 7, 1, 3, P.sky);
+      p.rect(4, 5, 1, 5, P.mint);
+      p.rect(6, 3, 1, 7, P.coral);
+      p.rect(2, 10, 6, 1, P.inkSoft);
+    } else if (kind === 'star') {
+      [
+        [4, 2], [5, 2], [3, 4], [4, 3], [5, 3], [6, 4], [2, 4], [7, 4], [3, 5], [4, 5], [5, 5], [6, 5],
+        [3, 6], [6, 6], [3, 7], [6, 7], [4, 4], [5, 4],
+      ].forEach(([x, y]) => p.px(x, y, P.sunDark));
+      p.rect(2, 9, 6, 1, P.inkSoft);
+    } else {
+      p.rect(2, 3, 6, 6, P.red);
+      p.rect(3, 4, 4, 4, P.white);
+      p.rect(4, 5, 2, 2, P.red);
+    }
+  });
+}
+
+export const DECOR_SIZES = {
+  window: { w: 16, h: 11 },
+  plant: { w: 8, h: 12 },
+  clock: { w: 7, h: 7 },
+  poster: { w: 10, h: 12 },
+};
+
+/** A string of party lights for the top of the arcade wall. Two frames
+ *  stacked (top: frame A, bottom: frame B) so CSS can make them twinkle. */
+export function lightString(): string {
+  const bulbs = [P.red, P.sun, P.sky, P.mint];
+  return paint('lights', 32, 20, (p) => {
+    for (const frame of [0, 1]) {
+      const oy = frame * 10;
+      // sagging wire
+      const wire = [1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 2, 2];
+      for (let x = 0; x < 32; x++) p.px(x, oy + wire[x % 16], P.ink);
+      [3, 11, 19, 27].forEach((x, i) => {
+        const y = oy + wire[x % 16] + 1;
+        const lit = (i + frame) % 2 === 0;
+        const c = bulbs[i];
+        p.rect(x, y, 2, 1, P.inkSoft);
+        p.rect(x - 1, y + 1, 4, 3, lit ? c : shade(c, -0.35));
+        p.rect(x, y + 4, 2, 1, lit ? c : shade(c, -0.35));
+        if (lit) p.px(x - 1, y + 1, P.white);
+      });
+    }
+  });
+}

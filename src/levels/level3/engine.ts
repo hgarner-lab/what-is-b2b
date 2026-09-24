@@ -37,7 +37,7 @@ export type StepEvents = {
   missed: boolean;
 };
 
-export function createWorld(w: number, h: number): World {
+export function createWorld(w: number, h: number, pix = 4): World {
   const world: World = {
     w,
     h,
@@ -52,12 +52,13 @@ export function createWorld(w: number, h: number): World {
     floaters: [],
     sparks: [],
   };
-  layout(world, w, h);
+  layout(world, w, h, pix);
   return world;
 }
 
 /** Positions everything for the given size, keeping game progress. */
-export function layout(world: World, w: number, h: number) {
+/** `pix` is the size of one art pixel, so the ball and paddle match the art. */
+export function layout(world: World, w: number, h: number, pix = 4) {
   const sx = world.w ? w / world.w : 1;
   const sy = world.h ? h / world.h : 1;
   world.w = w;
@@ -91,11 +92,11 @@ export function layout(world: World, w: number, h: number) {
 
   const base = Math.min(w, 900);
   world.paddle.w = Math.max(90, base * (0.19 + world.assist * 0.08));
-  world.paddle.h = 14;
+  world.paddle.h = 4 * pix;
   world.paddle.y = h - 30;
   world.paddle.x = clamp(world.paddle.x * sx, world.paddle.w / 2, w - world.paddle.w / 2);
 
-  world.ball.r = Math.max(7, Math.min(10, w * 0.012));
+  world.ball.r = 3 * pix;
   world.speed = Math.max(340, Math.min(620, Math.min(w, h * 1.3) * 0.78));
   if (world.ball.stuck) {
     world.ball.x = world.paddle.x;

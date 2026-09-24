@@ -4,7 +4,8 @@ import { EndCard, ReadyGo, Toast } from '../../components/ui';
 import { DEAL_VALUE, copy } from '../../content/copy';
 import { useMotionReduced } from '../../hooks/usePrefs';
 import { LAYERS, MILESTONES, type MilestoneId } from './barriers';
-import { PIX, draw } from './draw';
+import { draw, setPix } from './draw';
+import { readPx } from '../../pixel/usePx';
 import { createWorld, launch, layout, movePaddle, setAssist, step, type World } from './engine';
 import './level3.css';
 
@@ -31,6 +32,7 @@ export function LevelThreeRevenueBreakout({
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textRef = useRef<HTMLCanvasElement>(null);
   const world = useRef<World | null>(null);
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
@@ -61,24 +63,34 @@ export function LevelThreeRevenueBreakout({
   useEffect(() => {
     const wrap = wrapRef.current;
     const canvas = canvasRef.current;
-    if (!wrap || !canvas) return;
+    const text = textRef.current;
+    if (!wrap || !canvas || !text) return;
     const fit = () => {
       // Layout size, not on-screen size: the screen's switch-on animation
       // squashes it for a moment and would give the wrong numbers.
       const w = Math.max(280, wrap.clientWidth);
       const h = Math.max(320, wrap.clientHeight);
-      // Drawn at half resolution and scaled up, for chunky pixels.
-      canvas.width = Math.round(w / PIX);
-      canvas.height = Math.round(h / PIX);
+      // Shapes: one canvas pixel per art pixel, scaled up, for chunky pixels.
+      const px = readPx();
+      setPix(px);
+      canvas.width = Math.round(w / px);
+      canvas.height = Math.round(h / px);
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.setTransform(1 / PIX, 0, 0, 1 / PIX, 0, 0);
+        ctx.setTransform(1 / px, 0, 0, 1 / px, 0, 0);
         ctx.imageSmoothingEnabled = false;
       }
-      if (!world.current) world.current = createWorld(w, h);
-      else layout(world.current, w, h);
+      // Words: full resolution so they stay sharp.
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      text.width = Math.round(w * dpr);
+      text.height = Math.round(h * dpr);
+      text.style.width = `${w}px`;
+      text.style.height = `${h}px`;
+      text.getContext('2d')?.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!world.current) world.current = createWorld(w, h, px);
+      else layout(world.current, w, h, px);
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -89,9 +101,9 @@ export function LevelThreeRevenueBreakout({
   /* ---- Game loop ---- */
   useEffect(() => {
     if (phase !== 'play' && phase !== 'won' && phase !== 'title') return;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!ctx) return;
+    const ctx = canvasRef.current?.getContext('2d');
+    const tctx = textRef.current?.getContext('2d');
+    if (!ctx || !tctx) return;
 
     let raf = 0;
     let last = performance.now();
@@ -180,7 +192,7 @@ export function LevelThreeRevenueBreakout({
         if (ev.broke.length) checkProgress(wd, now);
       }
 
-      draw(ctx, wd, now, {
+      draw(ctx, tctx, wd, now, {
         won: phaseRef.current === 'won',
         wonAt: wonAt.current,
         showLaunchHint: phaseRef.current === 'play' && !missedAt.current,
@@ -307,6 +319,7 @@ export function LevelThreeRevenueBreakout({
               role="img"
               aria-label="Paddle and ball game. Break the barriers between you and the deal. Move with the mouse, a finger or the arrow keys."
             />
+            <canvas ref={textRef} className="l3__text" aria-hidden="true" />
           </div>
         </div>
 

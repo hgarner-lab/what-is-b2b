@@ -4,12 +4,13 @@ import {
   bubbleFrame,
   buttonFrame,
   cubicleFrame,
+  lightString,
   floorTile,
   marqueeFrame,
   panelFrame,
   screenTile,
   wallTile,
-  wellTile,
+  wellCell,
 } from './art';
 
 /**
@@ -33,9 +34,10 @@ export function initPixelTheme() {
     '--px-marquee': marqueeFrame(P.red, P.sun),
     '--px-cubicle': cubicleFrame(),
     '--px-wall': wallTile(),
+    '--px-lights': lightString(),
     '--px-floor': floorTile(),
     '--px-screen': screenTile(),
-    '--px-well': wellTile(),
+    '--px-well': wellCell(),
   };
   const root = document.documentElement;
   Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, `url("${v}")`));

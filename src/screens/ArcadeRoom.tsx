@@ -1,9 +1,10 @@
-import { useRef, useState, type CSSProperties } from 'react';
-import { sound } from '../audio/sound';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { music, sound } from '../audio/sound';
 import { Button } from '../components/ui';
 import { copy } from '../content/copy';
 import { useMotionReduced } from '../hooks/usePrefs';
 import { CABINET, cabinet, check, coin } from '../pixel/art';
+import { DEMO_H, DEMO_TICK_MS, DEMO_W, drawDemo, type DemoKind } from '../pixel/demos';
 import { PALETTE } from '../pixel/sprite';
 import { Sprite } from '../pixel/Sprite';
 import './room.css';
@@ -34,9 +35,16 @@ export function ArcadeRoom({
   const [flash, setFlash] = useState(false);
   const firstVisit = completed.length === 0;
 
+  // Gentle music while you're in the arcade (starts after the first click).
+  useEffect(() => {
+    music.start();
+    return () => music.stop();
+  }, []);
+
   const insertCoin = (from?: HTMLElement | null) => {
     if (busy) return;
     setBusy(true);
+    music.stop();
     sound.unlock();
     const cab = cabRefs.current[next];
     const room = roomRef.current;
@@ -66,7 +74,7 @@ export function ArcadeRoom({
         },
         { transform: `translate(${slot.x - size / 2}px, ${slot.y - size / 2}px) scale(0.5)` },
       ],
-      { duration: 650, easing: 'ease-in', fill: 'forwards' },
+      { duration: 450, easing: 'ease-in', fill: 'forwards' },
     );
 
     flight.onfinish = () => {
@@ -87,15 +95,16 @@ export function ArcadeRoom({
             { transform: 'scale(2.5)', opacity: 1, offset: 0.6 },
             { transform: 'scale(7)', opacity: 0 },
           ],
-          { duration: 650, easing: 'ease-in', fill: 'forwards' },
+          { duration: 500, easing: 'ease-in', fill: 'forwards' },
         );
         zoom.onfinish = () => onEnter(next);
-      }, 450);
+      }, 250);
     };
   };
 
   return (
     <div className="screen room" ref={roomRef}>
+      <div className="room__lights" aria-hidden="true" />
       <div className="room__wall">
         <div className="room__sign px-marquee">
           <h1 className="arcade room__title">{copy.intro.title}</h1>
@@ -137,13 +146,15 @@ export function ArcadeRoom({
                     Level {i + 1}
                   </div>
                   <div className="cab__screen" style={pct(CABINET.screen)}>
-                    <span className="cab__name">{m.short}</span>
+                    <DemoScreen kind={i as DemoKind} dim={status === 'locked'} />
                     {done ? (
                       <span className="cab__status arcade cab__status--done">
-                        <Sprite src={check()} w={7} h={6} scale={2} /> {m.score}
+                        <Sprite src={check()} w={7} h={6} /> {m.score}
                       </span>
                     ) : ready ? (
-                      <span className="cab__status arcade blink">{copy.room.playNow}</span>
+                      <span className="cab__status arcade">
+                        <span className="blink">{copy.room.playNow}</span>
+                      </span>
                     ) : (
                       <span className="cab__status cab__status--locked arcade">{copy.room.comingUp}</span>
                     )}
@@ -162,7 +173,7 @@ export function ArcadeRoom({
             <Button
               variant="coin"
               autoFocus
-              icon={<Sprite src={coin()} w={8} h={8} scale={3} />}
+              icon={<Sprite src={coin()} w={8} h={8} />}
               onClick={() => insertCoin(document.activeElement as HTMLElement)}
             >
               {copy.room.ready}
@@ -173,8 +184,33 @@ export function ArcadeRoom({
       </div>
 
       <div className="coin-flyer" ref={coinRef} aria-hidden="true">
-        <Sprite src={coin()} w={8} h={8} scale={3} />
+        <Sprite src={coin()} w={8} h={8} />
       </div>
     </div>
+  );
+}
+
+/** The little demo loop playing on a machine's screen. */
+function DemoScreen({ kind, dim }: { kind: DemoKind; dim: boolean }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const reduced = useMotionReduced();
+  useEffect(() => {
+    const c = ref.current?.getContext('2d');
+    if (!c) return;
+    // Each machine starts at a different point so they don't move in step.
+    let tick = kind * 7;
+    drawDemo(c, kind, reduced ? 34 : tick);
+    if (reduced) return;
+    const id = window.setInterval(() => drawDemo(c, kind, ++tick), DEMO_TICK_MS);
+    return () => window.clearInterval(id);
+  }, [kind, reduced]);
+  return (
+    <canvas
+      ref={ref}
+      width={DEMO_W}
+      height={DEMO_H}
+      className={`cab__demo px ${dim ? 'cab__demo--dim' : ''}`}
+      aria-hidden="true"
+    />
   );
 }

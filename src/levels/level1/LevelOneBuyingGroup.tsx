@@ -2,7 +2,16 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { sound } from '../../audio/sound';
 import { EndCard, ReadyGo } from '../../components/ui';
 import { copy } from '../../content/copy';
-import { bubbleTail, person as personArt } from '../../pixel/art';
+import {
+  DECOR_SIZES,
+  bubbleTail,
+  clock,
+  officeWindow,
+  person as personArt,
+  plant,
+  poster,
+  type WindowView,
+} from '../../pixel/art';
 import { Sprite } from '../../pixel/Sprite';
 import { HOME_SLOT, SLOT_COUNT, STAKEHOLDERS, byId, type Stakeholder } from './stakeholders';
 import './level1.css';
@@ -242,10 +251,8 @@ export function LevelOneBuyingGroup({
             headline={L1.endHeadline}
             score={L1.endScore(STAKEHOLDERS.length)}
             cta={L1.cta}
-            tease={L1.tease}
             onNext={onNext}
           >
-            <p className="lede">{L1.endBody}</p>
             <p className="l1__kicker">{L1.endKicker}</p>
           </EndCard>
         </div>
@@ -277,7 +284,8 @@ export function LevelOneBuyingGroup({
 
       <div className={`l1__board ${phase === 'freeze' ? 'is-frozen' : ''}`} ref={boardRef}>
         {game.current.slots.map((occ, i) => (
-          <div className="pod" key={i} data-slot={i}>
+          <div className={`pod pod--${i % 3}`} key={i} data-slot={i}>
+            <PodDecor slot={i} />
             {occ && (
               <Person
                 key={occ.key}
@@ -345,8 +353,41 @@ function Person({
         {convinced ? '✓ Convinced!' : question}
         <img src={bubbleTail()} alt="" className="person__tail px" />
       </span>
-      <img src={personArt(person.id, convinced)} alt="" className="person__sprite px" draggable={false} />
+      <Sprite src={personArt(person.id, convinced)} w={22} h={20} className="person__sprite" />
     </button>
+  );
+}
+
+/** Each cubicle gets its own bits and pieces so the office feels real. */
+const DECOR: { view: WindowView; extra: 'plant' | 'clock' | 'chart' | 'star' | 'target'; side: 'l' | 'r' }[] = [
+  { view: 'clouds', extra: 'plant', side: 'l' },
+  { view: 'city', extra: 'clock', side: 'r' },
+  { view: 'sun', extra: 'chart', side: 'l' },
+  { view: 'clouds', extra: 'star', side: 'r' },
+  { view: 'city', extra: 'plant', side: 'r' },
+  { view: 'sun', extra: 'target', side: 'l' },
+  { view: 'clouds', extra: 'clock', side: 'l' },
+  { view: 'city', extra: 'chart', side: 'r' },
+];
+
+function PodDecor({ slot }: { slot: number }) {
+  const d = DECOR[slot % DECOR.length];
+  const winSide = d.side === 'l' ? 'r' : 'l';
+  const extra =
+    d.extra === 'plant'
+      ? { src: plant(), ...DECOR_SIZES.plant, cls: 'pod__plant' }
+      : d.extra === 'clock'
+        ? { src: clock(), ...DECOR_SIZES.clock, cls: 'pod__clock' }
+        : { src: poster(d.extra), ...DECOR_SIZES.poster, cls: 'pod__poster' };
+  return (
+    <>
+      <Sprite
+        src={officeWindow(d.view)}
+        {...DECOR_SIZES.window}
+        className={`pod__deco pod__window pod__deco--${winSide}`}
+      />
+      <Sprite src={extra.src} w={extra.w} h={extra.h} className={`pod__deco ${extra.cls} pod__deco--${d.side}`} />
+    </>
   );
 }
 
@@ -355,7 +396,7 @@ function Lineup() {
     <ul className="lineup" aria-label="Everyone involved in the purchase">
       {STAKEHOLDERS.map((s, i) => (
         <li key={s.id} className="lineup__item px-panel" style={{ animationDelay: `${i * 70}ms` }}>
-          <Sprite src={personArt(s.id)} w={22} h={20} scale={3} className="lineup__sprite" />
+          <Sprite src={personArt(s.id)} w={22} h={20} className="lineup__sprite" />
           <span className="lineup__role">{s.role}</span>
           <span className="lineup__ask">{s.id === 'cmo' ? 'Can you convince the CFO?' : s.ask}</span>
         </li>

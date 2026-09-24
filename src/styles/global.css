@@ -24,11 +24,27 @@
   --font-body: 'Nunito', 'Trebuchet MS', system-ui, sans-serif;
 
   --gutter: clamp(12px, 3vw, 32px);
+
+  /* One art pixel on screen. Every sprite, frame and border is a whole
+     number of these, so all the pixel art matches. */
+  --px: 3px;
   --t-fast: 120ms;
   --t-med: 260ms;
   --t-slow: 480ms;
 
   color-scheme: light;
+}
+
+@media (min-width: 900px) and (min-height: 760px) {
+  :root {
+    --px: 4px;
+  }
+}
+
+@media (min-width: 1600px) and (min-height: 1000px) {
+  :root {
+    --px: 5px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -56,7 +72,7 @@ body {
   color: var(--ink);
   background-color: var(--cream);
   background-image: var(--px-wall);
-  background-size: 64px 64px;
+  background-size: calc(16 * var(--px)) calc(16 * var(--px));
   image-rendering: pixelated;
   font-family: var(--font-body);
   font-weight: 600;
@@ -105,9 +121,9 @@ img {
 .px-panel-sun,
 .px-panel-cream {
   border-style: solid;
-  border-width: 8px;
+  border-width: calc(2 * var(--px));
   border-image-slice: 2 fill;
-  border-image-width: 8px;
+  border-image-width: calc(2 * var(--px));
   border-image-repeat: stretch;
   border-image-source: var(--px-panel);
 }
@@ -124,20 +140,20 @@ img {
 
 .px-bubble {
   border-style: solid;
-  border-width: 6px;
-  border-image: var(--px-bubble) 2 fill / 6px stretch;
+  border-width: calc(2 * var(--px));
+  border-image: var(--px-bubble) 2 fill / calc(2 * var(--px)) stretch;
 }
 
 .px-marquee {
   border-style: solid;
-  border-width: 16px;
-  border-image: var(--px-marquee) 4 fill / 16px round;
+  border-width: calc(4 * var(--px));
+  border-image: var(--px-marquee) 4 fill / calc(4 * var(--px)) round;
 }
 
 .px-cubicle {
   border-style: solid;
-  border-width: 16px 4px 4px;
-  border-image: var(--px-cubicle) 4 1 1 fill / 16px 4px 4px stretch;
+  border-width: calc(4 * var(--px)) var(--px) var(--px);
+  border-image: var(--px-cubicle) 4 1 1 fill / calc(4 * var(--px)) var(--px) var(--px) stretch;
 }
 
 /* ---------------------------------------------------------------
@@ -294,4 +310,77 @@ img {
   to {
     transform: none;
   }
+}
+
+/* Share card (?card) --------------------------------------------- */
+.card {
+  width: 1200px;
+  height: 630px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card__body {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 56px;
+}
+
+.card__left {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 20px;
+}
+
+.card__sign {
+  padding: 12px 24px;
+}
+
+.card__sign p {
+  margin: 0;
+  font-size: 48px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.card__line {
+  margin: 0;
+  font-weight: 800;
+  font-size: 26px;
+  white-space: nowrap;
+}
+
+.card__coin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 18px;
+  color: var(--red);
+}
+
+.card__logo {
+  height: 26px;
+  width: auto;
+  align-self: flex-start;
+  image-rendering: auto;
+}
+
+.card__cabs {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.card__floor {
+  height: 70px;
+  background-color: #efe8ff;
+  background-image: var(--px-floor);
+  background-size: 64px 64px;
+  border-top: 4px solid var(--ink);
 }

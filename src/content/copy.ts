@@ -15,7 +15,7 @@ export const copy = {
 
   /** The arcade room between levels. */
   room: {
-    afterLevel: ['', 'One down. Two to go.', 'Nearly there. One machine left.'],
+    afterLevel: ['', 'Now try marketing to all of them.', 'Now turn it into revenue.'],
     ready: 'Insert coin',
     comingUp: 'Coming up',
     playNow: 'Insert coin',
@@ -38,11 +38,8 @@ export const copy = {
     hintAfterFirst: 'Click them as they appear',
     counterLabel: 'Buyers',
     endHeadline: "There isn't one buyer.",
-    endBody:
-      'A B2B purchase can involve people across leadership, finance, technology, procurement, legal and the teams who actually use the product.',
     endKicker: "And they don't all want the same thing.",
     endScore: (n: number) => ['1 buyer', `${n} people`] as const,
-    tease: 'Now try marketing to all of them.',
     cta: 'Next machine',
   },
 
@@ -59,7 +56,6 @@ export const copy = {
     endJourney: ['Brand', 'Demand', 'Leads', 'Nurture', 'Sales', 'Conversion'],
     endBody: 'B2B marketing can work across the entire commercial journey.',
     endScore: ['1 impression', 'the full journey'] as const,
-    tease: 'Attention was only the start. Now turn it into revenue.',
     cta: 'Next machine',
   },
 
@@ -104,6 +100,7 @@ export const copy = {
     line: 'Marketing to people who have to convince other people too.',
     again: 'Play again',
     recap: 'See what you just did',
+    scan: 'Play on your phone',
   },
 
   recap: {
@@ -112,7 +109,7 @@ export const copy = {
       {
         level: 'Level 1',
         stat: '7 people',
-        text: 'You set out to convince one buyer. Seven people turned up with questions, and each one could slow the deal down or stop it.',
+        text: 'You set out to convince one buyer. Seven people turned up: leadership, finance, technology, procurement, legal and the people who’d actually use it. Each had different questions, and any of them could slow the deal down.',
       },
       {
         level: 'Level 2',
