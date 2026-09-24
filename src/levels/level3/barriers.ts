@@ -15,8 +15,8 @@ export type Layer = {
 export const LAYERS: Layer[] = [
   {
     id: 'awareness',
-    fill: '#f4f2ee',
-    ink: '#111',
+    fill: '#58c4ff',
+    ink: '#262047',
     barriers: [
       { label: 'Never heard of you', fix: 'Brand' },
       { label: 'Not relevant', fix: 'The right message' },
@@ -26,8 +26,8 @@ export const LAYERS: Layer[] = [
   },
   {
     id: 'confidence',
-    fill: '#c9c5bd',
-    ink: '#111',
+    fill: '#9c82ff',
+    ink: '#262047',
     barriers: [
       { label: 'Don’t trust you', fix: 'Reviews' },
       { label: 'Too risky', fix: 'Guarantees' },
@@ -37,8 +37,8 @@ export const LAYERS: Layer[] = [
   },
   {
     id: 'commercial',
-    fill: '#948f87',
-    ink: '#111',
+    fill: '#ff7b9c',
+    ink: '#262047',
     barriers: [
       { label: 'No business case', fix: 'ROI calculator' },
       { label: 'No urgency', fix: 'A reason to act now' },

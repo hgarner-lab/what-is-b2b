@@ -1,0 +1,97 @@
+.machine {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(100% - 2 * var(--gutter), 1320px);
+  margin: 0 auto var(--gutter);
+  border-style: solid;
+  border-width: calc(4 * var(--px));
+  border-image: var(--cab) 4 fill / calc(4 * var(--px)) stretch;
+  padding: 4px clamp(6px, 1.4vw, 20px) clamp(8px, 1.4vw, 18px);
+  gap: 10px;
+}
+
+.machine__marquee {
+  align-self: center;
+  max-width: 100%;
+  padding: 4px 14px;
+  text-align: center;
+}
+
+.machine__marquee .arcade {
+  display: block;
+  font-size: clamp(10px, 1.1vw, 14px);
+  line-height: 1.4;
+}
+
+.machine__bezel {
+  flex: 1;
+  display: flex;
+  border-style: solid;
+  border-width: calc(3 * var(--px));
+  border-image: var(--px-bezel) 3 / calc(3 * var(--px)) stretch;
+}
+
+.machine__screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(10px, 2vw, 28px);
+  background-color: #f4fbff;
+  background-image: var(--px-screen);
+  background-size: calc(4 * var(--px)) calc(4 * var(--px));
+  overflow: hidden;
+  animation: power-on 420ms steps(6) both;
+}
+
+@keyframes power-on {
+  0% {
+    transform: scale(1, 0.01);
+    filter: brightness(3);
+  }
+  50% {
+    transform: scale(1, 0.01);
+    filter: brightness(3);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .machine__screen {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .machine {
+    width: 100%;
+    margin: 0;
+    padding: 2px 4px 6px;
+  }
+  .machine__marquee .arcade {
+    font-size: 9px;
+  }
+}
+
+/* Shorter laptop screens: slimmer cabinet so the game gets the room */
+@media (max-height: 820px) and (min-width: 641px) {
+  .machine {
+    gap: 6px;
+    padding-top: 2px;
+    margin-bottom: 12px;
+  }
+  .machine__marquee {
+    padding: 0 10px;
+  }
+  .machine__marquee .arcade {
+    font-size: 11px;
+  }
+  .machine__screen {
+    padding: 10px 16px;
+  }
+}

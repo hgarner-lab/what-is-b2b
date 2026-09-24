@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { sound } from '../../audio/sound';
-import { EndCard, LevelTitle, Toast } from '../../components/ui';
+import { EndCard, ReadyGo, Toast } from '../../components/ui';
 import { DEAL_VALUE, copy } from '../../content/copy';
 import { useMotionReduced } from '../../hooks/usePrefs';
 import { LAYERS, MILESTONES, type MilestoneId } from './barriers';
-import { draw } from './draw';
+import { draw, setPix } from './draw';
+import { readPx } from '../../pixel/usePx';
 import { createWorld, launch, layout, movePaddle, setAssist, step, type World } from './engine';
 import './level3.css';
 
@@ -12,6 +13,7 @@ type Phase = 'title' | 'play' | 'won' | 'end';
 
 const L3 = copy.level3;
 const AUTO_LAUNCH_MS = 2200;
+const CONTINUE_MS = 2400; // the CONTINUE? 3-2-1 after a miss
 const ASSIST_1_MS = 30_000; // wider paddle
 const ASSIST_2_MS = 50_000; // ball leans towards the barriers
 const WRAP_UP_MS = 80_000; // knock the rest down for them
@@ -30,6 +32,7 @@ export function LevelThreeRevenueBreakout({
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textRef = useRef<HTMLCanvasElement>(null);
   const world = useRef<World | null>(null);
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
@@ -39,6 +42,8 @@ export function LevelThreeRevenueBreakout({
   const wonAt = useRef(0);
   const keys = useRef({ left: false, right: false });
   const stuckSince = useRef(0);
+  const missedAt = useRef(0);
+  const [shake, setShake] = useState(0);
 
   const say = useCallback((text: string) => {
     const id = Date.now();
@@ -58,19 +63,34 @@ export function LevelThreeRevenueBreakout({
   useEffect(() => {
     const wrap = wrapRef.current;
     const canvas = canvasRef.current;
-    if (!wrap || !canvas) return;
+    const text = textRef.current;
+    if (!wrap || !canvas || !text) return;
     const fit = () => {
-      const rect = wrap.getBoundingClientRect();
-      const w = Math.max(280, Math.floor(rect.width));
-      const h = Math.max(320, Math.floor(rect.height));
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
+      // Layout size, not on-screen size: the screen's switch-on animation
+      // squashes it for a moment and would give the wrong numbers.
+      const w = Math.max(280, wrap.clientWidth);
+      const h = Math.max(320, wrap.clientHeight);
+      // Shapes: one canvas pixel per art pixel, scaled up, for chunky pixels.
+      const px = readPx();
+      setPix(px);
+      canvas.width = Math.round(w / px);
+      canvas.height = Math.round(h / px);
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
-      canvas.getContext('2d')?.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (!world.current) world.current = createWorld(w, h);
-      else layout(world.current, w, h);
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.setTransform(1 / px, 0, 0, 1 / px, 0, 0);
+        ctx.imageSmoothingEnabled = false;
+      }
+      // Words: full resolution so they stay sharp.
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      text.width = Math.round(w * dpr);
+      text.height = Math.round(h * dpr);
+      text.style.width = `${w}px`;
+      text.style.height = `${h}px`;
+      text.getContext('2d')?.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!world.current) world.current = createWorld(w, h, px);
+      else layout(world.current, w, h, px);
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -81,9 +101,9 @@ export function LevelThreeRevenueBreakout({
   /* ---- Game loop ---- */
   useEffect(() => {
     if (phase !== 'play' && phase !== 'won' && phase !== 'title') return;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!ctx) return;
+    const ctx = canvasRef.current?.getContext('2d');
+    const tctx = textRef.current?.getContext('2d');
+    if (!ctx || !tctx) return;
 
     let raf = 0;
     let last = performance.now();
@@ -91,6 +111,7 @@ export function LevelThreeRevenueBreakout({
     stuckSince.current = last;
     let assist = 0;
     let wrapping = false;
+    let lastTick = -1;
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -118,9 +139,18 @@ export function LevelThreeRevenueBreakout({
           say('Nearly there. Let’s close it.');
         }
 
-        if (wd.ball.stuck && now - stuckSince.current > AUTO_LAUNCH_MS) {
+        const wait = missedAt.current ? CONTINUE_MS : AUTO_LAUNCH_MS;
+        if (wd.ball.stuck && now - stuckSince.current > wait) {
           launch(wd);
-          sound.appear();
+          missedAt.current = 0;
+          sound.go();
+        }
+        if (wd.ball.stuck && missedAt.current) {
+          const tick = Math.floor((now - missedAt.current) / 800);
+          if (tick !== lastTick) {
+            lastTick = tick;
+            sound.countdown();
+          }
         }
 
         const ev = step(wd, dt);
@@ -135,8 +165,10 @@ export function LevelThreeRevenueBreakout({
         if (ev.paddle) sound.wall();
         if (ev.missed) {
           stuckSince.current = now;
+          missedAt.current = now;
+          lastTick = -1;
           sound.uhoh();
-          say(L3.missed);
+          setShake((n) => n + 1);
         }
         for (const br of ev.broke) {
           sound.brick(br.layer);
@@ -160,10 +192,11 @@ export function LevelThreeRevenueBreakout({
         if (ev.broke.length) checkProgress(wd, now);
       }
 
-      draw(ctx, wd, now, {
+      draw(ctx, tctx, wd, now, {
         won: phaseRef.current === 'won',
         wonAt: wonAt.current,
-        showLaunchHint: phaseRef.current === 'play',
+        showLaunchHint: phaseRef.current === 'play' && !missedAt.current,
+        continueFrom: wd.ball.stuck && missedAt.current ? now - missedAt.current : -1,
         reducedMotion,
       });
     };
@@ -179,6 +212,7 @@ export function LevelThreeRevenueBreakout({
       if (wd.bricks.every((b) => !b.alive)) {
         wonAt.current = now;
         setPhase('won');
+        setShake((n) => n + 1);
         window.setTimeout(() => reach('won'), 300);
         if (!reducedMotion) celebrate(wd, now);
         window.setTimeout(() => {
@@ -192,6 +226,15 @@ export function LevelThreeRevenueBreakout({
     return () => cancelAnimationFrame(raf);
   }, [phase, reach, reducedMotion, say]);
 
+  // Replay the shake each time something big happens.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || !shake || reducedMotion) return;
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+  }, [shake, reducedMotion]);
+
   /* ---- Controls ---- */
   useEffect(() => {
     if (phase !== 'play') return;
@@ -200,7 +243,10 @@ export function LevelThreeRevenueBreakout({
       else if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.current.right = true;
       else if (e.code === 'Space' || e.code === 'ArrowUp') {
         if ((e.target as HTMLElement)?.closest?.('button')) return;
-        if (world.current) launch(world.current);
+        if (world.current?.ball.stuck) {
+          launch(world.current);
+          missedAt.current = 0;
+        }
       } else return;
       e.preventDefault();
     };
@@ -231,8 +277,8 @@ export function LevelThreeRevenueBreakout({
       <div className="screen l3 l3--end">
         <div className="center-stack">
           <p className="l3__payoff" aria-hidden="true">
-            <span className="l3__payoff-label">Won</span>
-            <span className="l3__payoff-value">{DEAL_VALUE}</span>
+            <span className="arcade l3__payoff-label">Won</span>
+            <span className="display l3__payoff-value">{DEAL_VALUE}</span>
           </p>
           <EndCard headline={L3.endHeadline} size="md" cta={L3.cta} onNext={onNext}>
             <p className="l3__ladder">{L3.endBody}</p>
@@ -244,26 +290,28 @@ export function LevelThreeRevenueBreakout({
 
   return (
     <div className="screen l3">
-      {phase === 'title' && (
-        <LevelTitle number={L3.number} title={L3.title} onDone={() => setPhase('play')} />
-      )}
+      {phase === 'title' && <ReadyGo number={L3.number} title={L3.title} onDone={() => setPhase('play')} />}
 
       <div className="l3__layout">
         <div className="l3__main">
           <div className="l3__head">
             <p className="l3__setup">{L3.setup}</p>
-            <p className="l3__hint">
-              <span className="l1__hint-dot" /> {L3.hint}
+            <p className="l3__hint arcade">
+              <span className="blink">▶ {L3.hint}</span>
             </p>
           </div>
           <div
             className="l3__canvas-wrap"
+            onAnimationEnd={(e) => e.currentTarget.classList.remove('shake')}
             ref={wrapRef}
             onPointerMove={(e) => pointerTo(e.clientX)}
             onPointerDown={(e) => {
               sound.unlock();
               pointerTo(e.clientX);
-              if (world.current && phaseRef.current === 'play') launch(world.current);
+              if (world.current?.ball.stuck && phaseRef.current === 'play') {
+                launch(world.current);
+                missedAt.current = 0;
+              }
             }}
           >
             <canvas
@@ -271,17 +319,18 @@ export function LevelThreeRevenueBreakout({
               role="img"
               aria-label="Paddle and ball game. Break the barriers between you and the deal. Move with the mouse, a finger or the arrow keys."
             />
+            <canvas ref={textRef} className="l3__text" aria-hidden="true" />
           </div>
         </div>
 
         <aside className="l3__panel" aria-live="polite">
-          <div className={`money ${won ? 'money--won' : ''}`}>
+          <div className={`money px-panel ${won ? 'money--won' : ''}`}>
             <span className="eyebrow">{won ? 'Revenue won' : 'Pipeline'}</span>
             <span className="money__value">
               {pipelineShown ? <CountUp to={2.4} key={won ? 'won' : 'pipe'} /> : '£0'}
             </span>
           </div>
-          <ol className="ticker">
+          <ol className="ticker px-panel">
             {MILESTONES.map((m) => {
               const done = reached.includes(m.id);
               const text = m.id === 'pipeline' ? `Pipeline ${DEAL_VALUE}` : m.id === 'won' ? `Won · ${DEAL_VALUE}` : m.text;

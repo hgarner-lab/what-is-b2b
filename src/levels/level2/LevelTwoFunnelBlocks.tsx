@@ -4,13 +4,15 @@ import {
   useReducer,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent,
   type ReactNode,
 } from 'react';
 import { sound } from '../../audio/sound';
-import { EndCard, LevelTitle, Toast } from '../../components/ui';
+import { EndCard, ReadyGo, Toast } from '../../components/ui';
 import { copy } from '../../content/copy';
-import { useCoarsePointer } from '../../hooks/usePrefs';
+import { useCoarsePointer, useMotionReduced } from '../../hooks/usePrefs';
+import { block, fillerBlock, ghostBlock } from '../../pixel/art';
 import { AWARENESS_ONLY_MESSAGE, BLOCK, BLOCKS, type BlockType } from './blocks';
 import {
   COLS,
@@ -22,10 +24,13 @@ import {
   fullRows,
   makeRandomiser,
   merge,
+  openingBoard,
   removeRows,
+  shapeOf,
   spawn,
   tryRotate,
   type Board,
+  type CellType,
   type Piece,
 } from './engine';
 import './level2.css';
@@ -33,10 +38,21 @@ import './level2.css';
 type Phase = 'title' | 'play' | 'finishing' | 'end';
 
 const L2 = copy.level2;
-const GRAVITY_MS = 780; // forgiving on purpose
-const CLEAR_MS = 320;
-const HELP_AFTER_MS = 45_000; // start feeding the missing steps harder
-const WRAP_UP_AFTER_MS = 85_000; // never let the level drag on
+const GRAVITY_MS = 720; // forgiving on purpose
+const CLEAR_MS = 360;
+const HELP_AFTER_MS = 30_000; // start feeding the missing steps harder
+const WRAP_UP_AFTER_MS = 58_000;
+const STUCK_MS = 12_000; // no line for this long: offer the long bar // never let the level drag on
+const LINE_CALLS = ['', 'Line!', '2 lines!', '3 lines!', '4 lines!!'];
+
+const cellStyle = (type: CellType): CSSProperties =>
+  type === 'filler'
+    ? { backgroundImage: `url("${fillerBlock()}")` }
+    : { backgroundImage: `url("${block(BLOCK[type].color)}")`, color: BLOCK[type].ink };
+
+const miniStyle = (type: BlockType): CSSProperties => ({
+  backgroundImage: `url("${block(BLOCK[type].color, 5)}")`,
+});
 
 export function LevelTwoFunnelBlocks({
   onComplete,
@@ -47,14 +63,19 @@ export function LevelTwoFunnelBlocks({
 }) {
   const [phase, setPhase] = useState<Phase>('title');
   const [toast, setToast] = useState<{ text: string; id: number } | null>(null);
+  const [call, setCall] = useState<{ text: string; id: number } | null>(null);
+  const [shake, setShake] = useState(0);
   const [, render] = useReducer((x: number) => x + 1, 0);
   const coarse = useCoarsePointer();
+  const reduced = useMotionReduced();
 
   const nextPick = useRef(makeRandomiser());
   const g = useRef({
-    board: emptyBoard() as Board,
+    board: openingBoard() as Board,
     piece: null as Piece | null,
-    next: null as [BlockType, string] | null,
+    next: null as BlockType | null,
+    lastType: null as BlockType | null,
+    lastClear: 0,
     lit: new Set<BlockType>(),
     justLit: null as BlockType | null,
     clearing: [] as number[],
@@ -88,7 +109,7 @@ export function LevelTwoFunnelBlocks({
     (text: string) => {
       const id = Date.now();
       setToast({ text, id });
-      later(2800, () => setToast((t) => (t?.id === id ? null : t)));
+      later(3000, () => setToast((t) => (t?.id === id ? null : t)));
     },
     [later],
   );
@@ -97,8 +118,7 @@ export function LevelTwoFunnelBlocks({
 
   const finish = useCallback(() => {
     if (phaseRef.current !== 'play') return;
-    const s = g.current;
-    s.piece = null;
+    g.current.piece = null;
     setPhase('finishing');
     sound.success();
     later(1500, () => {
@@ -110,9 +130,13 @@ export function LevelTwoFunnelBlocks({
   const spawnNext = useCallback(() => {
     const s = g.current;
     const urgent = performance.now() - s.playStart > HELP_AFTER_MS;
-    const [type, shape] = s.next ?? nextPick.current(s.lit, urgent);
-    s.next = nextPick.current(s.lit, urgent);
-    const piece = spawn(type, shape, ++s.seq);
+    const now = performance.now();
+    const stuck = now - Math.max(s.lastClear, s.playStart) > STUCK_MS;
+    const type = s.next ?? nextPick.current(s.lit, urgent);
+    // If nothing has cleared for a while, the long bar is the friendliest piece.
+    s.next = stuck && type !== 'awareness' && Math.random() < 0.7 ? 'awareness' : nextPick.current(s.lit, urgent);
+    const piece = spawn(type, ++s.seq);
+    s.lastType = type;
     if (collides(s.board, piece)) {
       // Stack reached the top. No game over: just make room and carry on.
       s.board = emptyBoard();
@@ -128,23 +152,31 @@ export function LevelTwoFunnelBlocks({
     (rowsTypes: BlockType[][]) => {
       const s = g.current;
       const before = new Set(s.lit);
+      const awarenessOnly = rowsTypes.some((types) => types.length > 0 && types.every((t) => t === 'awareness'));
       rowsTypes.flat().forEach((t) => s.lit.add(t));
+      // Every mixed line moves the journey on at least one step, so the
+      // level never stalls. A line of pure Awareness doesn't: that's the point.
+      if (!awarenessOnly) {
+        rowsTypes.forEach(() => {
+          if ([...s.lit].every((t) => before.has(t))) {
+            const nextStep = BLOCKS.find((b) => !s.lit.has(b.type));
+            if (nextStep) s.lit.add(nextStep.type);
+          }
+        });
+      }
       const fresh = BLOCKS.filter((b) => s.lit.has(b.type) && !before.has(b.type));
 
-      const awarenessOnly = rowsTypes.some((types) => types.every((t) => t === 'awareness'));
       if (fresh.length) {
         const furthest = fresh[fresh.length - 1];
         s.justLit = furthest.type;
-        sound.milestone();
+        later(250, () => sound.milestone());
         say(awarenessOnly && furthest.type === 'awareness' ? AWARENESS_ONLY_MESSAGE : furthest.message);
-      } else {
-        const missing = BLOCKS.find((b) => !s.lit.has(b.type));
-        if (awarenessOnly) say(AWARENESS_ONLY_MESSAGE);
-        else if (missing) say(`Still missing: ${missing.stage.toLowerCase()}.`);
+      } else if (awarenessOnly) {
+        say(AWARENESS_ONLY_MESSAGE);
       }
       return s.lit.size === BLOCKS.length;
     },
-    [say],
+    [later, say],
   );
 
   const lock = useCallback(() => {
@@ -159,9 +191,14 @@ export function LevelTwoFunnelBlocks({
       return;
     }
     s.clearing = rows;
+    s.lastClear = performance.now();
     s.busy = true;
     sound.lineClear();
-    const rowsTypes = rows.map((r) => [...new Set(s.board[r].map((c) => c!.type))]);
+    setCall({ text: LINE_CALLS[Math.min(rows.length, 4)], id: Date.now() });
+    if (rows.length > 1) setShake((n) => n + 1);
+    const rowsTypes = rows.map(
+      (r) => [...new Set(s.board[r].map((c) => c!.type).filter((t): t is BlockType => t !== 'filler'))],
+    );
     const allLit = lightUp(rowsTypes);
     render();
     later(CLEAR_MS, () => {
@@ -310,17 +347,17 @@ export function LevelTwoFunnelBlocks({
   /* ---- Render ---- */
   const s = g.current;
   const current = s.piece ? BLOCK[s.piece.type] : null;
-  const upNext = s.next ? BLOCK[s.next[0]] : null;
+  const shown = current ?? (s.lastType ? BLOCK[s.lastType] : null); // keep the card filled between pieces
 
-  const view: ({ type: BlockType; kind: 'set' | 'live' } | null)[][] = s.board.map((row) =>
-    row.map((c) => (c ? { type: c.type, kind: 'set' } : null)),
+  const view: ({ type: CellType; live: boolean } | null)[][] = s.board.map((row) =>
+    row.map((c) => (c ? { type: c.type, live: false } : null)),
   );
   const ghost = new Set<string>();
   if (s.piece) {
     const d = dropDistance(s.board, s.piece);
     cellsOf({ ...s.piece, y: s.piece.y + d }).forEach(([r, c]) => ghost.add(`${r}:${c}`));
     cellsOf(s.piece).forEach(([r, c]) => {
-      if (r >= 0) view[r][c] = { type: s.piece!.type, kind: 'live' };
+      if (r >= 0) view[r][c] = { type: s.piece!.type, live: true };
     });
   }
 
@@ -328,16 +365,10 @@ export function LevelTwoFunnelBlocks({
     return (
       <div className="screen l2 l2--end">
         <div className="center-stack">
-          <EndCard
-            headline={L2.endHeadline}
-            score={L2.endScore}
-            cta={L2.cta}
-            tease={L2.tease}
-            onNext={onNext}
-          >
+          <EndCard headline={L2.endHeadline} score={L2.endScore} cta={L2.cta} onNext={onNext}>
             <ol className="journey-reveal" aria-label="The commercial journey">
               {L2.endJourney.map((step, i) => (
-                <li key={step} style={{ animationDelay: `${500 + i * 110}ms` }}>
+                <li key={step} className="px-panel" style={{ animationDelay: `${500 + i * 110}ms` }}>
                   {step}
                 </li>
               ))}
@@ -351,28 +382,19 @@ export function LevelTwoFunnelBlocks({
 
   return (
     <div className="screen l2">
-      {phase === 'title' && (
-        <LevelTitle number={L2.number} title={L2.title} onDone={() => setPhase('play')} />
-      )}
+      {phase === 'title' && <ReadyGo number={L2.number} title={L2.title} onDone={() => setPhase('play')} />}
 
       <div className="l2__layout">
         <aside className="l2__side l2__side--left">
           <p className="l2__setup">{L2.setup}</p>
-          <div className="now" aria-live="polite">
+          <div className="now px-panel" aria-live="polite">
             <span className="eyebrow">{L2.nowLabel}</span>
-            {current && (
-              <div className="now__card" key={s.piece?.id} style={{ borderColor: current.color }}>
-                <span className="now__chip" style={{ background: current.color, color: current.ink }}>
-                  {current.code}
-                </span>
-                <span className="now__name">{current.name}</span>
-                <span className="now__what">{current.what}</span>
+            {shown && (
+              <div className="now__card" key={shown.type + (s.piece?.id ?? '')}>
+                <MiniPiece type={shown.type} />
+                <span className="now__name">{shown.name}</span>
+                <span className="now__what">{shown.what}</span>
               </div>
-            )}
-            {upNext && (
-              <p className="now__next">
-                Next: <strong>{upNext.name}</strong>
-              </p>
             )}
           </div>
           <Toast message={toast?.text ?? null} id={toast?.id ?? 0} />
@@ -380,43 +402,50 @@ export function LevelTwoFunnelBlocks({
         </aside>
 
         <div className="l2__center">
-          <p className="l2__hint">
-            <span className="l1__hint-dot" /> {L2.hint}
+          <p className="l2__hint arcade">
+            <span className="blink">▶ {L2.hint}</span>
           </p>
-          <div
-            className={`well ${phase === 'finishing' ? 'is-done' : ''}`}
-            style={{ ['--cols' as string]: COLS, ['--rows' as string]: ROWS }}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={() => (gesture.current = null)}
-            role="application"
-            aria-label="Block stacking board. Use arrow keys to move and rotate, space to drop."
-          >
-            {view.map((row, r) =>
-              row.map((cell, c) => {
-                const key = `${r}:${c}`;
-                const clearing = s.clearing.includes(r);
-                if (cell) {
-                  const b = BLOCK[cell.type];
+          <div className="well-wrap" key={shake}>
+            <div
+              className={`well ${phase === 'finishing' ? 'is-done' : ''} ${shake && !reduced ? 'shake' : ''}`}
+              style={{ ['--cols' as string]: COLS, ['--rows' as string]: ROWS }}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={() => (gesture.current = null)}
+              role="application"
+              aria-label="Block stacking board. Use arrow keys to move and rotate, space to drop."
+            >
+              {view.map((row, r) =>
+                row.map((cell, c) => {
+                  const key = `${r}:${c}`;
+                  if (cell) {
+                    const clearing = s.clearing.includes(r);
+                    return (
+                      <div
+                        key={key}
+                        className={`cell cell--filled ${cell.live ? 'cell--live' : ''} ${clearing ? 'cell--clearing' : ''}`}
+                        style={cellStyle(cell.type)}
+                      >
+                        {cell.type === 'filler' ? '' : BLOCK[cell.type].code}
+                      </div>
+                    );
+                  }
+                  const isGhost = ghost.has(key) && current;
                   return (
                     <div
                       key={key}
-                      className={`cell cell--filled ${cell.kind === 'live' ? 'cell--live' : ''} ${clearing ? 'cell--clearing' : ''}`}
-                      style={{ background: b.color, color: b.ink }}
-                    >
-                      {b.code}
-                    </div>
+                      className={`cell ${isGhost ? 'cell--ghost' : ''}`}
+                      style={isGhost ? { backgroundImage: `url("${ghostBlock(current.color)}")` } : undefined}
+                    />
                   );
-                }
-                return (
-                  <div
-                    key={key}
-                    className={`cell ${ghost.has(key) && current ? 'cell--ghost' : ''}`}
-                    style={ghost.has(key) && current ? { borderColor: current.color } : undefined}
-                  />
-                );
-              }),
+                }),
+              )}
+            </div>
+            {call && (
+              <p className="l2__call arcade" key={call.id} aria-hidden="true">
+                {call.text}
+              </p>
             )}
           </div>
 
@@ -432,44 +461,65 @@ export function LevelTwoFunnelBlocks({
                 ▶
               </PadButton>
               <PadButton label="Drop" onPress={() => act('drop')} wide>
-                Drop ▼
+                Drop
               </PadButton>
             </div>
           )}
         </div>
 
         <aside className="l2__side l2__side--right">
-          <span className="eyebrow">{L2.journeyLabel}</span>
-          <ol className="journey">
-            {BLOCKS.map((b, i) => {
-              const lit = s.lit.has(b.type);
-              return (
-                <li
-                  key={b.type}
-                  className={`journey__step ${lit ? 'is-lit' : ''} ${s.justLit === b.type ? 'is-new' : ''}`}
-                >
-                  <span
-                    className="journey__chip"
-                    style={lit ? { background: b.color, color: b.ink } : { borderColor: b.color, color: b.color }}
+          <div className="nextbox px-panel">
+            <span className="eyebrow">Next</span>
+            {s.next && <MiniPiece type={s.next} />}
+          </div>
+          <div className="journey-box px-panel">
+            <span className="eyebrow">{L2.journeyLabel}</span>
+            <ol className="journey">
+              {BLOCKS.map((b) => {
+                const lit = s.lit.has(b.type);
+                return (
+                  <li
+                    key={b.type}
+                    className={`journey__step ${lit ? 'is-lit' : ''} ${s.justLit === b.type ? 'is-new' : ''}`}
                   >
-                    {b.code}
-                  </span>
-                  <span className="journey__text">
+                    <span className="journey__chip" style={lit ? cellStyle(b.type) : undefined}>
+                      {b.code}
+                    </span>
                     <span className="journey__stage">{b.stage}</span>
-                    <span className="journey__means">{b.stageMeans}</span>
-                  </span>
-                  <span className="journey__state">
-                    {lit ? '✓' : ''}
-                    <span className="sr-only">{lit ? 'reached' : 'not yet'}</span>
-                  </span>
-                  {i < BLOCKS.length - 1 && <span className="journey__arrow" aria-hidden="true" />}
-                </li>
-              );
-            })}
-          </ol>
+                    <span className="journey__state arcade">
+                      {lit ? '✓' : ''}
+                      <span className="sr-only">{lit ? 'reached' : 'not yet'}</span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+            {s.justLit && (
+              <p className="journey__latest" key={s.justLit}>
+                <strong>{BLOCK[s.justLit].stage}:</strong> {BLOCK[s.justLit].stageMeans.toLowerCase()}
+              </p>
+            )}
+          </div>
         </aside>
       </div>
     </div>
+  );
+}
+
+/** A small drawing of a piece's shape, for the Now and Next boxes. */
+function MiniPiece({ type }: { type: BlockType }) {
+  const shape = shapeOf(type);
+  return (
+    <span
+      className="mini"
+      style={{ gridTemplateColumns: `repeat(${shape[0].length}, var(--mini))` }}
+      aria-label={BLOCK[type].name}
+      role="img"
+    >
+      {shape.flatMap((row, r) =>
+        row.map((v, c) => <span key={`${r}-${c}`} className="mini__cell" style={v ? miniStyle(type) : undefined} />),
+      )}
+    </span>
   );
 }
 
@@ -495,7 +545,7 @@ function PadButton({
   return (
     <button
       type="button"
-      className={`pad__btn ${wide ? 'pad__btn--wide' : ''}`}
+      className={`pbtn pad__btn ${wide ? 'pbtn--coin pad__btn--wide' : 'pbtn--ghost'}`}
       aria-label={label}
       onPointerDown={(e) => {
         e.preventDefault();

@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { sound } from '../../audio/sound';
-import { EndCard, LevelTitle } from '../../components/ui';
+import { EndCard, ReadyGo } from '../../components/ui';
 import { copy } from '../../content/copy';
+import {
+  DECOR_SIZES,
+  bubbleTail,
+  clock,
+  officeWindow,
+  person as personArt,
+  plant,
+  poster,
+  type WindowView,
+} from '../../pixel/art';
+import { Sprite } from '../../pixel/Sprite';
 import { HOME_SLOT, SLOT_COUNT, STAKEHOLDERS, byId, type Stakeholder } from './stakeholders';
 import './level1.css';
 
@@ -41,6 +52,8 @@ export function LevelOneBuyingGroup({
   const [phase, setPhase] = useState<Phase>('title');
   const [headline, setHeadline] = useState<string>(L1.instruction);
   const [flash, setFlash] = useState<{ text: string; key: number } | null>(null);
+  const [combo, setCombo] = useState<{ n: number; key: number } | null>(null);
+  const lastHit = useRef({ at: 0, n: 0 });
   const [, render] = useReducer((x: number) => x + 1, 0);
 
   const game = useRef({
@@ -116,7 +129,16 @@ export function LevelOneBuyingGroup({
       occ.status = 'convinced';
       sound.hit();
       const person = byId[occ.personId];
-      if (p !== 'first') setFlash({ text: `${person.role} convinced.`, key: occ.key });
+      if (p !== 'first') setFlash({ text: `${person.role} convinced!`, key: occ.key });
+
+      // Quick clicks in a row build a combo.
+      const now = performance.now();
+      const run = now - lastHit.current.at < 1100 ? lastHit.current.n + 1 : 1;
+      lastHit.current = { at: now, n: run };
+      if (run >= 2 && p !== 'first') {
+        setCombo({ n: run, key: occ.key });
+        later(120, () => sound.combo(run));
+      }
       render();
       const key = occ.key;
       later(p === 'first' ? 1400 : 700, () => leave(slot, key));
@@ -229,10 +251,8 @@ export function LevelOneBuyingGroup({
             headline={L1.endHeadline}
             score={L1.endScore(STAKEHOLDERS.length)}
             cta={L1.cta}
-            tease={L1.tease}
             onNext={onNext}
           >
-            <p className="lede">{L1.endBody}</p>
             <p className="l1__kicker">{L1.endKicker}</p>
           </EndCard>
         </div>
@@ -242,9 +262,7 @@ export function LevelOneBuyingGroup({
 
   return (
     <div className="screen l1">
-      {phase === 'title' && (
-        <LevelTitle number={L1.number} title={L1.title} onDone={() => setPhase('setup')} />
-      )}
+      {phase === 'title' && <ReadyGo number={L1.number} title={L1.title} onDone={() => setPhase('setup')} />}
 
       <div className="l1__head">
         <div className="l1__copy">
@@ -252,17 +270,13 @@ export function LevelOneBuyingGroup({
           <h2 className="display display--md l1__headline" key={headline} aria-live="polite">
             {phase === 'setup' ? L1.instruction : headline}
           </h2>
-          <p className="l1__hint" aria-hidden={!hint}>
-            {hint && (
-              <>
-                <span className="l1__hint-dot" /> {hint}
-              </>
-            )}
+          <p className="l1__hint arcade" aria-hidden={!hint}>
+            {hint && <span className="blink">▶ {hint}</span>}
           </p>
         </div>
-        <div className="l1__counter" aria-live="polite">
+        <div className="l1__counter px-panel-sun" aria-live="polite">
           <span className="eyebrow">{L1.counterLabel}</span>
-          <span className="l1__count" key={seenCount}>
+          <span className="arcade l1__count" key={seenCount}>
             {Math.max(1, seenCount)}
           </span>
         </div>
@@ -270,7 +284,8 @@ export function LevelOneBuyingGroup({
 
       <div className={`l1__board ${phase === 'freeze' ? 'is-frozen' : ''}`} ref={boardRef}>
         {game.current.slots.map((occ, i) => (
-          <div className="pod" key={i} data-slot={i}>
+          <div className={`pod pod--${i % 3}`} key={i} data-slot={i}>
+            <PodDecor slot={i} />
             {occ && (
               <Person
                 key={occ.key}
@@ -281,11 +296,22 @@ export function LevelOneBuyingGroup({
                 onClick={() => convince(i)}
               />
             )}
+            <div className="pod__desk px-cubicle" aria-hidden="true" />
+            {occ && (
+              <span key={`name-${occ.key}`} className={`pod__name pod__name--${occ.status}`} aria-hidden="true">
+                {byId[occ.personId].role}
+              </span>
+            )}
           </div>
         ))}
         {flash && phase !== 'freeze' && (
-          <p className="l1__flash" key={flash.key} aria-hidden="true">
-            ✓ {flash.text}
+          <p className="l1__flash arcade px-panel-sun" key={flash.key} aria-hidden="true">
+            {flash.text}
+          </p>
+        )}
+        {combo && phase !== 'freeze' && (
+          <p className="l1__combo arcade" key={`c${combo.key}`} aria-hidden="true">
+            Combo ×{combo.n}!
           </p>
         )}
       </div>
@@ -309,38 +335,59 @@ function Person({
   const question = round === 1 ? person.ask : person.again;
   const convinced = status === 'convinced';
   return (
-    <div className={`person person--${status} ${frozen ? 'person--frozen' : ''}`}>
-      <p className="person__bubble">{convinced ? '✓ Convinced' : question}</p>
-      <button
-        type="button"
-        className="person__body"
-        onPointerDown={(e) => {
-          // Pointer down feels snappier than click for fast-moving targets.
-          if (e.pointerType !== 'mouse' || e.button === 0) {
-            e.preventDefault();
-            onClick();
-          }
-        }}
-        onClick={onClick}
-        disabled={frozen || status !== 'up'}
-        aria-label={`${person.role}: “${question}” Convince them.`}
-      >
-        <Avatar glyph={person.glyph} />
-        <span className="person__role">{person.role}</span>
-      </button>
-    </div>
+    <button
+      type="button"
+      className={`person person--${status} ${frozen ? 'person--frozen' : ''}`}
+      onPointerDown={(e) => {
+        // Pointer down feels snappier than click for fast-moving targets.
+        if (e.pointerType !== 'mouse' || e.button === 0) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      onClick={onClick}
+      disabled={frozen || status !== 'up'}
+      aria-label={`${person.role}: “${question}” Convince them.`}
+    >
+      <span className={`person__bubble px-bubble ${convinced ? 'person__bubble--yes' : ''}`}>
+        {convinced ? '✓ Convinced!' : question}
+        <img src={bubbleTail()} alt="" className="person__tail px" />
+      </span>
+      <Sprite src={personArt(person.id, convinced)} w={22} h={20} className="person__sprite" />
+    </button>
   );
 }
 
-function Avatar({ glyph }: { glyph: string }) {
+/** Each cubicle gets its own bits and pieces so the office feels real. */
+const DECOR: { view: WindowView; extra: 'plant' | 'clock' | 'chart' | 'star' | 'target'; side: 'l' | 'r' }[] = [
+  { view: 'clouds', extra: 'plant', side: 'l' },
+  { view: 'city', extra: 'clock', side: 'r' },
+  { view: 'sun', extra: 'chart', side: 'l' },
+  { view: 'clouds', extra: 'star', side: 'r' },
+  { view: 'city', extra: 'plant', side: 'r' },
+  { view: 'sun', extra: 'target', side: 'l' },
+  { view: 'clouds', extra: 'clock', side: 'l' },
+  { view: 'city', extra: 'chart', side: 'r' },
+];
+
+function PodDecor({ slot }: { slot: number }) {
+  const d = DECOR[slot % DECOR.length];
+  const winSide = d.side === 'l' ? 'r' : 'l';
+  const extra =
+    d.extra === 'plant'
+      ? { src: plant(), ...DECOR_SIZES.plant, cls: 'pod__plant' }
+      : d.extra === 'clock'
+        ? { src: clock(), ...DECOR_SIZES.clock, cls: 'pod__clock' }
+        : { src: poster(d.extra), ...DECOR_SIZES.poster, cls: 'pod__poster' };
   return (
-    <span className="avatar" aria-hidden="true">
-      <svg viewBox="0 0 64 64" className="avatar__svg">
-        <circle cx="32" cy="20" r="12" />
-        <path d="M8 64c0-15 10.7-25 24-25s24 10 24 25z" />
-      </svg>
-      <span className="avatar__glyph">{glyph}</span>
-    </span>
+    <>
+      <Sprite
+        src={officeWindow(d.view)}
+        {...DECOR_SIZES.window}
+        className={`pod__deco pod__window pod__deco--${winSide}`}
+      />
+      <Sprite src={extra.src} w={extra.w} h={extra.h} className={`pod__deco ${extra.cls} pod__deco--${d.side}`} />
+    </>
   );
 }
 
@@ -348,8 +395,8 @@ function Lineup() {
   return (
     <ul className="lineup" aria-label="Everyone involved in the purchase">
       {STAKEHOLDERS.map((s, i) => (
-        <li key={s.id} className="lineup__item" style={{ animationDelay: `${i * 60}ms` }}>
-          <Avatar glyph={s.glyph} />
+        <li key={s.id} className="lineup__item px-panel" style={{ animationDelay: `${i * 70}ms` }}>
+          <Sprite src={personArt(s.id)} w={22} h={20} className="lineup__sprite" />
           <span className="lineup__role">{s.role}</span>
           <span className="lineup__ask">{s.id === 'cmo' ? 'Can you convince the CFO?' : s.ask}</span>
         </li>

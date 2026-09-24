@@ -16,6 +16,8 @@ export type BlockInfo = {
   message: string;
   color: string;
   ink: string;
+  /** Which classic block shape carries this activity. */
+  shape: 'I' | 'O' | 'T' | 'S' | 'Z' | 'J' | 'L';
 };
 
 /** In journey order. */
@@ -28,8 +30,9 @@ export const BLOCKS: BlockInfo[] = [
     stage: 'Awareness',
     stageMeans: 'They know you exist',
     message: 'People know you exist.',
-    color: '#f4f2ee',
-    ink: '#111',
+    color: '#58c4ff',
+    ink: '#262047',
+    shape: 'I',
   },
   {
     type: 'content',
@@ -39,8 +42,9 @@ export const BLOCKS: BlockInfo[] = [
     stage: 'Interest',
     stageMeans: 'They want to know more',
     message: 'Now they’re curious.',
-    color: '#ffd23f',
-    ink: '#111',
+    color: '#ffcb3d',
+    ink: '#262047',
+    shape: 'O',
   },
   {
     type: 'demand',
@@ -50,8 +54,9 @@ export const BLOCKS: BlockInfo[] = [
     stage: 'Demand',
     stageMeans: 'They want a solution',
     message: 'Now they’re looking for a solution.',
-    color: '#ff8a3d',
-    ink: '#111',
+    color: '#9c82ff',
+    ink: '#262047',
+    shape: 'T',
   },
   {
     type: 'leads',
@@ -61,8 +66,9 @@ export const BLOCKS: BlockInfo[] = [
     stage: 'Leads',
     stageMeans: 'They put their hand up',
     message: 'Someone put their hand up.',
-    color: '#4cc9f0',
-    ink: '#111',
+    color: '#48d597',
+    ink: '#262047',
+    shape: 'S',
   },
   {
     type: 'nurture',
@@ -72,8 +78,9 @@ export const BLOCKS: BlockInfo[] = [
     stage: 'Nurture',
     stageMeans: 'You stay useful until they’re ready',
     message: 'Interest needs somewhere to go.',
-    color: '#7be495',
-    ink: '#111',
+    color: '#ff7b9c',
+    ink: '#262047',
+    shape: 'Z',
   },
   {
     type: 'sales',
@@ -83,8 +90,9 @@ export const BLOCKS: BlockInfo[] = [
     stage: 'Sales',
     stageMeans: 'Sales has what it needs',
     message: 'Now the sales team has something useful to work with.',
-    color: '#b39cff',
-    ink: '#111',
+    color: '#4a6cf7',
+    ink: '#fff',
+    shape: 'J',
   },
   {
     type: 'cro',
@@ -94,8 +102,9 @@ export const BLOCKS: BlockInfo[] = [
     stage: 'Conversion',
     stageMeans: 'They say yes',
     message: 'Less friction. More action.',
-    color: '#e4002b',
-    ink: '#fff',
+    color: '#ff9a3c',
+    ink: '#262047',
+    shape: 'L',
   },
 ];
 

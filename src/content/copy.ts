@@ -9,9 +9,25 @@ export const copy = {
   intro: {
     title: 'What even is B2B?',
     sub: 'Good question.',
-    cta: 'Show me',
+    cta: 'Insert coin',
     note: 'Three tiny games. About three minutes.',
   },
+
+  /** The arcade room between levels. */
+  room: {
+    afterLevel: ['', 'Now try marketing to all of them.', 'Now turn it into revenue.'],
+    ready: 'Insert coin',
+    comingUp: 'Coming up',
+    playNow: 'Insert coin',
+    cleared: 'Cleared!',
+  },
+
+  /** The three machines, in order. */
+  machines: [
+    { short: 'Who’s the customer?', score: '7 people' },
+    { short: 'Market to them', score: '7 stages' },
+    { short: 'Turn it into revenue', score: `${DEAL_VALUE} won` },
+  ],
 
   level1: {
     number: 1,
@@ -22,12 +38,9 @@ export const copy = {
     hintAfterFirst: 'Click them as they appear',
     counterLabel: 'Buyers',
     endHeadline: "There isn't one buyer.",
-    endBody:
-      'A B2B purchase can involve people across leadership, finance, technology, procurement, legal and the teams who actually use the product.',
     endKicker: "And they don't all want the same thing.",
     endScore: (n: number) => ['1 buyer', `${n} people`] as const,
-    tease: 'Now try marketing to all of them.',
-    cta: 'Next: market to them',
+    cta: 'Next machine',
   },
 
   level2: {
@@ -43,8 +56,7 @@ export const copy = {
     endJourney: ['Brand', 'Demand', 'Leads', 'Nurture', 'Sales', 'Conversion'],
     endBody: 'B2B marketing can work across the entire commercial journey.',
     endScore: ['1 impression', 'the full journey'] as const,
-    tease: 'Attention was only the start. Now turn it into revenue.',
-    cta: 'Next: turn it into revenue',
+    cta: 'Next machine',
   },
 
   level3: {
@@ -58,23 +70,37 @@ export const copy = {
     goal: 'The deal',
     endHeadline: 'B2B marketing can connect activity to commercial outcomes.',
     endBody: 'Accounts. Opportunities. Pipeline. Revenue.',
-    cta: 'So what is B2B?',
+    cta: 'See high scores',
   },
 
   final: {
-    title: 'What even is B2B?',
+    title: 'High scores',
+    subtitle: 'What even is B2B?',
     statements: [
-      { big: 'Many people.', small: 'Purchases are usually group decisions.' },
       {
+        rank: '1st',
+        big: 'Many people.',
+        small: 'Purchases are usually group decisions.',
+        score: '7 people',
+      },
+      {
+        rank: '2nd',
         big: 'Many stages.',
         small: 'Marketing can run from awareness through demand, nurture, sales and conversion.',
+        score: '7 stages',
       },
-      { big: 'One commercial outcome.', small: 'Activity can connect to pipeline and revenue.' },
+      {
+        rank: '3rd',
+        big: 'One commercial outcome.',
+        small: 'Activity can connect to pipeline and revenue.',
+        score: DEAL_VALUE,
+      },
     ],
     thats: "That's B2B.",
     line: 'Marketing to people who have to convince other people too.',
     again: 'Play again',
     recap: 'See what you just did',
+    scan: 'Play on your phone',
   },
 
   recap: {
@@ -83,7 +109,7 @@ export const copy = {
       {
         level: 'Level 1',
         stat: '7 people',
-        text: 'You set out to convince one buyer. Seven people turned up with questions, and each one could slow the deal down or stop it.',
+        text: 'You set out to convince one buyer. Seven people turned up: leadership, finance, technology, procurement, legal and the people who’d actually use it. Each had different questions, and any of them could slow the deal down.',
       },
       {
         level: 'Level 2',
